@@ -21,6 +21,28 @@ app.use(express.json());
 // Paths
 const USERS_FILE = path.join(__dirname, '../data/users.json');
 const OTP_FILE = path.join(__dirname, '../data/otp.json');
+const AUDIT_FILE = path.join(__dirname, '../data/audit.json');
+
+// Helper: Registrar evento de auditoría
+async function logAudit(action, userId, email, req) {
+  try {
+    console.log(`📝 Registrando auditoría: ${action} para ${email}`);
+    const audits = await readJSON(AUDIT_FILE);
+    const newEntry = {
+      id: `audit_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      action,
+      userId: userId || 'N/A',
+      email: email || 'N/A',
+      ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      userAgent: req.headers['user-agent']
+    };
+    audits.push(newEntry);
+    await writeJSON(AUDIT_FILE, audits);
+  } catch (error) {
+    console.error('Error al guardar auditoría:', error);
+  }
+}
 
 // Helper: Read JSON file
 async function readJSON(filePath) {
@@ -77,6 +99,8 @@ app.post('/api/register', async (req, res) => {
     users.push(newUser);
     await writeJSON(USERS_FILE, users);
 
+    await logAudit('USER_REGISTERED', newUser.id, email, req);
+
     // Generar OTP
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const otpData = {
@@ -131,8 +155,11 @@ app.post('/api/login', async (req, res) => {
     const user = users.find(u => u.email === email);
 
     if (!user || user.password !== password) {
+      await logAudit('LOGIN_FAILED', null, email, req);
       return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
     }
+
+    await logAudit('LOGIN_ATTEMPT_SUCCESS_WAITING_OTP', user.id, email, req);
 
     // SIEMPRE generar OTP para autenticación de dos factores
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -236,6 +263,8 @@ app.post('/api/verify-otp', async (req, res) => {
     const filtered = otps.filter(o => o.email !== email);
     await writeJSON(OTP_FILE, filtered);
 
+    await logAudit('OTP_VERIFIED_SUCCESS', user.id, email, req);
+
     res.json({
       success: true,
       message: 'Verificación exitosa',
@@ -263,6 +292,19 @@ app.get('/api/user/:email', async (req, res) => {
   } catch (error) {
     console.error('Error en /api/user:', error);
     res.status(500).json({ success: false, message: 'Error del servidor' });
+  }
+});
+
+// GET /api/audit - Obtener registros de auditoría
+app.get('/api/audit', async (req, res) => {
+  try {
+    console.log('🔍 Alguien está consultando el log de auditoría');
+    const audits = await readJSON(AUDIT_FILE);
+    // Devolvemos los últimos 50 registros, del más nuevo al más viejo
+    res.json({ success: true, audits: [...audits].reverse().slice(0, 50) });
+  } catch (error) {
+    console.error('Error en /api/audit:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener auditoría' });
   }
 });
 

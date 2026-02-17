@@ -6,5 +6,29 @@
     "password": "123456",
     "verified": true,
     "createdAt": "2026-02-17T15:46:34.218Z"
+  },
+  {
+    "id": "user_1771346673579",
+    "name": "edu",
+    "email": "eduar05066@gmail.com",
+    "password": "123456",
+    "verified": false,
+    "createdAt": "2026-02-17T16:44:33.579Z"
+  },
+  {
+    "id": "user_1771349051115",
+    "name": "José Ignacio Hernández Guerra",
+    "email": "hernandz.j2004@gmail.com",
+    "password": "123456",
+    "verified": true,
+    "createdAt": "2026-02-17T17:24:11.115Z"
+  },
+  {
+    "id": "user_1771349281200",
+    "name": "Erick",
+    "email": "isistemas2022@gmail.com",
+    "password": "123456",
+    "verified": true,
+    "createdAt": "2026-02-17T17:28:01.200Z"
   }
 ]

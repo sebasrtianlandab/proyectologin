@@ -14,10 +14,8 @@ Desarrollar un sistema completo de autenticación con verificación OTP (One-Tim
 - ✅ **Envío de emails real** vía Gmail SMTP (Nodemailer)
 - ✅ **Persistencia en JSON** simulando base de datos
 - ✅ **Interfaz profesional** sin mensajes de desarrollo
+- ✅ **Módulo de auditoría** funcional con logs de eventos real-time
 - ✅ **Documentación completa** organizada en carpeta `docs/`
-
-### Pospuesto
-- ⏸️ **Módulo de auditoría** completo
 
 ---
 
@@ -106,10 +104,11 @@ Usuario → Credenciales → Backend valida → Genera OTP → Email enviado →
 ### Archivos del Proyecto
 - **Total**: ~120 archivos
 - **Componentes React**: 15
-- **Rutas API**: 4
+- **Rutas API**: 5
 - **Docs MD**: 6
-
----
+| Módulo | Estado | Notas |
+|---|---|---|
+| **Auditoría** | Pospuesto | Módulo nativo funcional |
 
 ## 🎨 Características de la Interfaz
 
@@ -177,7 +176,7 @@ npm run server         # Iniciar API
 4. HTTPS en producción
 
 ### Funcionalidad
-1. Módulo de auditoría completo
+1. Expandir filtros en auditoría
 2. Recuperación de contraseña
 3. Cambio de contraseña
 4. Panel de administración

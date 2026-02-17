@@ -14,7 +14,7 @@ Login-con-verificación-OTP/
 ├── 📂 data/                          # Persistencia de datos (JSON)
 │   ├── users.json                    # Base de datos de usuarios
 │   ├── otp.json                      # Códigos OTP temporales
-│   └── audit.json                    # Auditoría (pospuesto)
+│   └── audit.json                    # Auditoría de eventos
 │
 ├── 📂 server/                        # Backend Node.js + Express
 │   ├── server.js                     # Servidor API principal
@@ -31,6 +31,7 @@ Login-con-verificación-OTP/
 │   │   │   │   ├── LoginView.tsx        # Vista de login
 │   │   │   │   ├── OTPVerificationView.tsx  # Vista verificación OTP
 │   │   │   │   ├── DashboardView.tsx    # Dashboard protegido
+│   │   │   │   ├── AuditView.tsx        # Módulo de Auditoría (Admin)
 │   │   │   │   └── ProtectedRoute.tsx   # Guardia de rutas
 │   │   │   │
 │   │   │   └── 📂 ui/               # Componentes UI reutilizables
@@ -82,7 +83,7 @@ Contiene toda la documentación del proyecto:
 Almacena la persistencia de datos en formato JSON:
 - `users.json`: Usuarios registrados (id, nombre, email, contraseña, verificado, fecha)
 - `otp.json`: Códigos OTP temporales (código, intentos, expiración)
-- `audit.json`: Logs de auditoría (funcionalidad pospuesta)
+- `audit.json`: Logs de auditoría (registros de inicio de sesión, fallos, etc.)
 
 ### ⚙️ `/server`
 Backend Node.js con Express:
@@ -109,6 +110,7 @@ Rutas API:
 - `POST /api/login` - Validación credenciales + envío OTP (2FA)
 - `POST /api/verify-otp` - Verificación código OTP
 - `GET /api/user/:email` - Obtener datos de usuario
+- `GET /api/audit` - Obtener logs de auditoría
 
 ### Frontend - Arquitectura MVC
 
@@ -124,6 +126,7 @@ Rutas API:
 - `LoginView.tsx` - Formulario de inicio de sesión
 - `OTPVerificationView.tsx` - Validación código OTP
 - `DashboardView.tsx` - Panel protegido
+- `AuditView.tsx` - Visualización de logs de auditoría
 - `ProtectedRoute.tsx` - Protección de rutas
 
 ---
@@ -212,7 +215,5 @@ Usuario → Frontend (React) → API Backend (Express) → Data (JSON)
 - Login con autenticación 2FA
 - Verificación OTP por email
 - Dashboard protegido
+- Módulo de auditoría integral (v1.0)
 - Interfaz profesional sin mensajes de desarrollo
-
-⏸️ **Pospuesto:**
-- Módulo de auditoría completo

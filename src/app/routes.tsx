@@ -3,6 +3,7 @@ import { RegisterView } from './components/auth/RegisterView';
 import { LoginView } from './components/auth/LoginView';
 import { OTPVerificationView } from './components/auth/OTPVerificationView';
 import { DashboardView } from './components/auth/DashboardView';
+import { AuditView } from './components/auth/AuditView';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -27,6 +28,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DashboardView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/audit',
+    element: (
+      <ProtectedRoute>
+        <AuditView />
       </ProtectedRoute>
     ),
   },
