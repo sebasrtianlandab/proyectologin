@@ -1,10 +1,10 @@
 [
   {
-    "id": "user_1771340402280",
+    "id": "user_1771343194218",
     "name": "eduardo",
     "email": "vegasoft09@gmail.com",
     "password": "123456",
-    "verified": false,
-    "createdAt": "2026-02-17T15:00:02.280Z"
+    "verified": true,
+    "createdAt": "2026-02-17T15:46:34.218Z"
   }
 ]

@@ -17,7 +17,7 @@ export function OTPVerificationView() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (otp.length !== 6) {
       toast.error('Por favor ingresa el código completo de 6 dígitos');
       return;
@@ -25,10 +25,10 @@ export function OTPVerificationView() {
 
     setIsLoading(true);
 
-    // Simular delay de red
-    setTimeout(() => {
-      const result = AuthController.verifyOTP(otp);
-      
+    // Llamar al controlador actualizado (async)
+    setTimeout(async () => {
+      const result = await AuthController.verifyOTP(otp);
+
       if (result.success) {
         toast.success(result.message, {
           description: 'Redirigiendo al panel...',
@@ -53,7 +53,7 @@ export function OTPVerificationView() {
         }
         setOtp('');
       }
-      
+
       setIsLoading(false);
     }, 500);
   };
@@ -99,7 +99,7 @@ export function OTPVerificationView() {
             ease: "easeInOut",
           }}
         />
-        
+
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
@@ -173,9 +173,9 @@ export function OTPVerificationView() {
                 >
                   <InputOTPGroup className="gap-2">
                     {[0, 1, 2, 3, 4, 5].map((index) => (
-                      <InputOTPSlot 
+                      <InputOTPSlot
                         key={index}
-                        index={index} 
+                        index={index}
                         className="bg-slate-800/50 border-cyan-500/30 text-white text-xl focus:border-cyan-400 focus:ring-cyan-400/20 transition-all w-12 h-14"
                       />
                     ))}
@@ -195,17 +195,6 @@ export function OTPVerificationView() {
                   </p>
                 </motion.div>
               )}
-
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4"
-              >
-                <p className="text-sm text-blue-300">
-                  💡 <strong>Modo desarrollo:</strong> El código OTP se muestra en la consola del navegador.
-                </p>
-              </motion.div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pt-2">
               <motion.div
@@ -214,8 +203,8 @@ export function OTPVerificationView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 relative overflow-hidden group"
                   disabled={isLoading || otp.length !== 6}
                 >

@@ -216,23 +216,6 @@ export function DashboardView() {
                   </motion.div>
                 ))}
               </div>
-
-              <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-300 mb-2">Arquitectura MVC</h4>
-                <ul className="text-sm text-blue-200/90 space-y-1">
-                  <li>• <strong>Modelo:</strong> AuthService, User (gestión de datos)</li>
-                  <li>• <strong>Vista:</strong> Componentes React (RegisterView, LoginView, etc.)</li>
-                  <li>• <strong>Controlador:</strong> AuthController (lógica de negocio)</li>
-                </ul>
-              </div>
-
-              <div className="mt-4 p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
-                <h4 className="text-sm font-medium text-green-300 mb-2">✅ Backend Integrado</h4>
-                <p className="text-sm text-green-200/90">
-                  El sistema ahora utiliza un servidor Node.js + Express con persistencia real en archivos JSON.
-                  Los códigos OTP se envían a correos reales mediante Gmail SMTP.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </motion.div>

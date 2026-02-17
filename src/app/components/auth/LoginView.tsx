@@ -20,14 +20,14 @@ export function LoginView() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simular delay de red
-    setTimeout(() => {
-      const result = AuthController.login(email, password);
-      
+    // Llamar al controlador actualizado (async)
+    setTimeout(async () => {
+      const result = await AuthController.login(email, password);
+
       if (result.success) {
         if (result.requiresOTP) {
           toast.info(result.message, {
-            description: 'Revisa la consola del navegador para ver el código OTP',
+            description: 'Revisa tu correo electrónico',
           });
           navigate('/verify-otp');
         } else {
@@ -37,7 +37,7 @@ export function LoginView() {
       } else {
         toast.error(result.message);
       }
-      
+
       setIsLoading(false);
     }, 500);
   };
@@ -84,7 +84,7 @@ export function LoginView() {
             ease: "easeInOut",
           }}
         />
-        
+
         {/* Partículas flotantes */}
         {[...Array(20)].map((_, i) => (
           <motion.div
@@ -193,8 +193,8 @@ export function LoginView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 relative overflow-hidden group"
                   disabled={isLoading}
                 >

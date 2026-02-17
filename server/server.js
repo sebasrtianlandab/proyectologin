@@ -134,49 +134,41 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
     }
 
-    if (!user.verified) {
-      // Generar OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpData = {
-        userId: user.id,
-        email,
-        code: otpCode,
-        attempts: 0,
-        maxAttempts: 3,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      };
+    // SIEMPRE generar OTP para autenticación de dos factores
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpData = {
+      userId: user.id,
+      email,
+      code: otpCode,
+      attempts: 0,
+      maxAttempts: 3,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    };
 
-      const otps = await readJSON(OTP_FILE);
-      const filtered = otps.filter(o => o.email !== email);
-      filtered.push(otpData);
-      await writeJSON(OTP_FILE, filtered);
+    const otps = await readJSON(OTP_FILE);
+    const filtered = otps.filter(o => o.email !== email);
+    filtered.push(otpData);
+    await writeJSON(OTP_FILE, filtered);
 
-      // Enviar email
-      await transporter.sendMail({
-        from: process.env.GMAIL_USER,
-        to: email,
-        subject: 'Código de Verificación OTP',
-        html: `
-          <h2>Código de Verificación</h2>
-          <p>Tu código de verificación es:</p>
-          <h1 style="font-size: 32px; color: #4CAF50;">${otpCode}</h1>
-          <p>Este código expira en 10 minutos.</p>
-        `,
-      });
+    // Enviar email
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: email,
+      subject: 'Código de Verificación OTP - Login',
+      html: `
+        <h2>Código de Verificación de Acceso</h2>
+        <p>Has iniciado sesión. Tu código de verificación es:</p>
+        <h1 style="font-size: 32px; color: #4CAF50;">${otpCode}</h1>
+        <p>Este código expira en 10 minutos.</p>
+        <p>Tienes 3 intentos para ingresar el código correcto.</p>
+      `,
+    });
 
-      return res.json({
-        success: true,
-        message: 'Usuario no verificado. Se ha enviado un código OTP a tu email.',
-        requiresOTP: true,
-        userId: user.id,
-      });
-    }
-
-    res.json({
+    return res.json({
       success: true,
-      message: 'Login exitoso',
-      requiresOTP: false,
-      user: { id: user.id, name: user.name, email: user.email },
+      message: 'Credenciales correctas. Se ha enviado un código OTP a tu email.',
+      requiresOTP: true,
+      userId: user.id,
     });
   } catch (error) {
     console.error('Error en /api/login:', error);
