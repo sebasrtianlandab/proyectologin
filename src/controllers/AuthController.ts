@@ -68,7 +68,9 @@ export class AuthController {
           userId: result.user.id,
           name: result.user.name,
           email: result.user.email,
+          role: result.user.role,
           loginAt: new Date().toISOString(),
+          mustChangePassword: result.user.mustChangePassword || false,
         });
       }
 
@@ -100,6 +102,7 @@ export class AuthController {
           userId: result.user.id,
           name: result.user.name,
           email: result.user.email,
+          role: result.user.role,
           loginAt: new Date().toISOString(),
         });
 

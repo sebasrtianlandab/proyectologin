@@ -20,7 +20,6 @@ export function LoginView() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Llamar al controlador actualizado (async)
     setTimeout(async () => {
       const result = await AuthController.login(email, password);
 
@@ -30,6 +29,11 @@ export function LoginView() {
             description: 'Revisa tu correo electrónico',
           });
           navigate('/verify-otp');
+        } else if (result.user?.mustChangePassword) {
+          toast.warning('¡Bienvenido! Debes cambiar tu contraseña temporal para continuar.', {
+            duration: 5000,
+          });
+          navigate('/change-password', { state: { email: result.user.email } });
         } else {
           toast.success(result.message);
           navigate('/dashboard');

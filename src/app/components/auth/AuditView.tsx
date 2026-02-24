@@ -1,25 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {
-    ShieldCheck,
-    History,
-    User,
-    Globe,
-    Monitor,
-    Calendar,
-    Search,
-    ArrowLeft,
-    AlertCircle,
-    CheckCircle2,
-    XCircle,
-    RefreshCw
+    ShieldCheck, User, CheckCircle2, XCircle, RefreshCw,
+    AlertCircle, Search, Activity, Download, Trash2
 } from 'lucide-react';
-import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { ERPLayout } from '../layout/ERPLayout';
 
 export const AuditView: React.FC = () => {
-    const navigate = useNavigate();
     const [audits, setAudits] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
 
     const fetchAudits = async () => {
         setLoading(true);
@@ -31,8 +21,7 @@ export const AuditView: React.FC = () => {
             } else {
                 toast.error('No se pudo cargar la auditoría');
             }
-        } catch (error) {
-            console.error('Error fetching audits:', error);
+        } catch {
             toast.error('Error de conexión con el servidor');
         } finally {
             setLoading(false);
@@ -41,195 +30,151 @@ export const AuditView: React.FC = () => {
 
     useEffect(() => {
         fetchAudits();
+        const interval = setInterval(fetchAudits, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const getActionBadge = (action: string) => {
-        switch (action) {
-            case 'OTP_VERIFIED_SUCCESS':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> Acceso Exitoso
-                    </span>
-                );
-            case 'LOGIN_FAILED':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                        <XCircle className="w-3 h-3 mr-1" /> Intento Fallido
-                    </span>
-                );
-            case 'USER_REGISTERED':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                        <User className="w-3 h-3 mr-1" /> Registro Nuevo
-                    </span>
-                );
-            case 'LOGIN_SUCCESS_DIRECT':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> Acceso Directo
-                    </span>
-                );
-            case 'LOGIN_ATTEMPT_SUCCESS_WAITING_OTP':
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
-                        <AlertCircle className="w-3 h-3 mr-1" /> Esperando OTP
-                    </span>
-                );
-            default:
-                return (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 border border-neutral-200">
-                        <Activity className="w-3 h-3 mr-1" /> {action}
-                    </span>
-                );
-        }
+        const map: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+            'OTP_VERIFIED_SUCCESS': { label: 'OTP Verificado', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
+            'LOGIN_SUCCESS_DIRECT': { label: 'Acceso Directo', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
+            'LOGIN_FAILED': { label: 'Intento Fallido', color: 'bg-red-100 text-red-800', icon: XCircle },
+            'USER_REGISTERED': { label: 'Registro Usuario', color: 'bg-blue-100 text-blue-800', icon: User },
+            'EMPLOYEE_REGISTERED': { label: 'Alta Empleado', color: 'bg-indigo-100 text-indigo-800', icon: User },
+            'PASSWORD_CHANGED': { label: 'Cambio Contraseña', color: 'bg-purple-100 text-purple-800', icon: ShieldCheck },
+            'EMPLOYEE_DELETED': { label: 'Baja Empleado', color: 'bg-red-100 text-red-800', icon: Trash2 },
+            'LOGIN_ATTEMPT_SUCCESS_WAITING_OTP': { label: 'Esperando OTP', color: 'bg-amber-100 text-amber-800', icon: AlertCircle },
+        };
+        const def = map[action] || { label: action, color: 'bg-gray-100 text-gray-700', icon: Activity };
+        const Icon = def.icon;
+        return (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${def.color}`}>
+                <Icon className="w-3 h-3" /> {def.label}
+            </span>
+        );
     };
 
+    // Stats
+    const successCount = audits.filter(a => ['OTP_VERIFIED_SUCCESS', 'LOGIN_SUCCESS_DIRECT'].includes(a.action)).length;
+    const failedCount = audits.filter(a => a.action === 'LOGIN_FAILED').length;
+    const registeredCount = audits.filter(a => ['USER_REGISTERED', 'EMPLOYEE_REGISTERED'].includes(a.action)).length;
+
+    const filtered = audits.filter(a =>
+        search === '' ||
+        a.email?.toLowerCase().includes(search.toLowerCase()) ||
+        a.action?.toLowerCase().includes(search.toLowerCase()) ||
+        a.ip?.includes(search)
+    );
+
     return (
-        <div className="min-h-screen bg-neutral-50 flex flex-col">
-            {/* Header */}
-            <header className="bg-white border-b border-neutral-200 px-6 py-4 sticky top-0 z-10 shadow-sm">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate('/dashboard')}
-                            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <div className="bg-blue-600 p-2 rounded-lg">
-                                <ShieldCheck className="w-6 h-6 text-white" />
-                            </div>
+        <ERPLayout title="Auditoría" subtitle="Registro de eventos y seguridad del sistema">
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-6">
+                <div />
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 bg-green-50 px-3 py-1.5 rounded-full">
+                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span className="text-xs font-semibold text-green-700">Live · Auto-refresh 30s</span>
+                    </div>
+                    <button
+                        onClick={fetchAudits}
+                        disabled={loading}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50">
+                        <Download className="w-4 h-4" /> Exportar CSV
+                    </button>
+                </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                {[
+                    { label: 'Accesos Exitosos', value: successCount, color: 'text-green-600 bg-green-50', icon: CheckCircle2 },
+                    { label: 'Intentos Fallidos', value: failedCount, color: 'text-red-600 bg-red-50', icon: XCircle },
+                    { label: 'Registros', value: registeredCount, color: 'text-blue-600 bg-blue-50', icon: User },
+                ].map(stat => (
+                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                        <div className="flex items-start justify-between">
                             <div>
-                                <h1 className="text-xl font-bold text-neutral-900 leading-tight">Módulo de Auditoría</h1>
-                                <p className="text-xs text-neutral-500 font-medium">Panel de Control de Seguridad</p>
+                                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
+                                <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                            </div>
+                            <div className={`p-2 rounded-lg ${stat.color}`}>
+                                <stat.icon className="w-4 h-4" />
                             </div>
                         </div>
                     </div>
+                ))}
+            </div>
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={fetchAudits}
-                            disabled={loading}
-                            className="p-2 hover:bg-neutral-100 rounded-lg transition-all text-neutral-500 disabled:opacity-50"
-                        >
-                            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
-                        <div className="flex items-center gap-2 bg-neutral-100 px-3 py-1.5 rounded-full">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">Live Logs</span>
-                        </div>
-                    </div>
+            {/* Search */}
+            <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm">
+                <div className="relative max-w-sm">
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                    <input
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Buscar por email, acción o IP..."
+                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
                 </div>
-            </header>
+            </div>
 
-            {/* Main Content */}
-            <main className="flex-1 max-w-7xl mx-auto w-full p-6 space-y-6">
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm transition-transform hover:scale-[1.02]">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
-                                <History className="w-6 h-6" />
-                            </div>
-                        </div>
-                        <h3 className="text-neutral-500 text-sm font-medium">Eventos Totales</h3>
-                        <p className="text-3xl font-bold text-neutral-900 mt-1">{audits.length}</p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm transition-transform hover:scale-[1.02]">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 bg-red-50 rounded-xl text-red-600">
-                                <AlertCircle className="w-6 h-6" />
-                            </div>
-                        </div>
-                        <h3 className="text-neutral-500 text-sm font-medium">Alertas Críticas</h3>
-                        <p className="text-3xl font-bold text-neutral-900 mt-1">
-                            {audits.filter(a => a.action === 'LOGIN_FAILED').length}
-                        </p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm transition-transform hover:scale-[1.02]">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 bg-green-50 rounded-xl text-green-600">
-                                <Globe className="w-6 h-6" />
-                            </div>
-                        </div>
-                        <h3 className="text-neutral-500 text-sm font-medium">IPs Únicas</h3>
-                        <p className="text-3xl font-bold text-neutral-900 mt-1">
-                            {new Set(audits.map(a => a.ip)).size}
-                        </p>
-                    </div>
+            {/* Table */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-sm font-bold text-gray-700">Registro de Eventos</h3>
+                    <span className="ml-auto text-xs text-gray-400">{filtered.length} eventos</span>
                 </div>
-
-                {/* Table Container */}
-                <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
-                        <h2 className="font-bold text-neutral-800 flex items-center gap-2">
-                            <Monitor className="w-5 h-5 text-blue-600" />
-                            Actividad del Servidor
-                        </h2>
+                {loading ? (
+                    <div className="text-center py-16 text-gray-400 text-sm">Cargando registros...</div>
+                ) : filtered.length === 0 ? (
+                    <div className="text-center py-16 text-gray-400">
+                        <Activity className="w-10 h-10 mx-auto mb-2 text-gray-200" />
+                        <p className="text-sm">No hay registros de auditoría</p>
                     </div>
-
+                ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="bg-neutral-50 border-b border-neutral-200">
-                                    <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Fecha / Hora</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Acción</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Usuario / Email</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">IP de Origen</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">Dispositivo</th>
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    {['Fecha y Hora', 'Acción', 'Usuario', 'IP', 'Agente'].map(h => (
+                                        <th key={h} className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                                    ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-neutral-100">
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-neutral-400">
-                                            Cargando registros...
+                            <tbody className="divide-y divide-gray-50">
+                                {filtered.map((audit) => (
+                                    <tr key={audit.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                                            {new Date(audit.timestamp).toLocaleString('es-ES', {
+                                                day: '2-digit', month: '2-digit', year: 'numeric',
+                                                hour: '2-digit', minute: '2-digit', second: '2-digit'
+                                            })}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {getActionBadge(audit.action)}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs font-medium text-gray-700">
+                                            {audit.email}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs text-gray-400 font-mono">
+                                            {audit.ip || '—'}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs text-gray-400 max-w-48 truncate">
+                                            {audit.userAgent?.split(' ')[0] || '—'}
                                         </td>
                                     </tr>
-                                ) : audits.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-neutral-400">
-                                            No hay actividad registrada aún.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    audits.map((audit) => (
-                                        <tr key={audit.id} className="hover:bg-neutral-50 transition-colors group">
-                                            <td className="px-6 py-4 text-sm text-neutral-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4 text-neutral-400" />
-                                                    {new Date(audit.timestamp).toLocaleString()}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {getActionBadge(audit.action)}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-semibold text-neutral-900">
-                                                {audit.email}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-mono text-neutral-500">
-                                                {audit.ip}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="text-xs text-neutral-400 max-w-[200px] truncate group-hover:whitespace-normal transition-all">
-                                                    {audit.userAgent}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
+                                ))}
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </main>
-        </div>
+                )}
+            </div>
+        </ERPLayout>
     );
 };
-
-const Activity: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-);

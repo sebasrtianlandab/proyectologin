@@ -5,7 +5,9 @@ export interface Session {
   userId: string;
   name: string;
   email: string;
+  role: 'admin' | 'user';
   loginAt: string;
+  mustChangePassword?: boolean;
 }
 
 export class AuthService {
@@ -54,8 +56,17 @@ export class AuthService {
   }
 
   static getSession(): Session | null {
-    const session = localStorage.getItem('session');
-    return session ? JSON.parse(session) : null;
+    const sessionStr = localStorage.getItem('session');
+    if (!sessionStr) return null;
+
+    try {
+      const session = JSON.parse(sessionStr);
+      // 🔥 Fallback: Si la sesión es antigua y no tiene rol, asignamos 'user'
+      if (!session.role) session.role = 'user';
+      return session;
+    } catch {
+      return null;
+    }
   }
 
   static clearSession(): void {

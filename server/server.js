@@ -93,6 +93,7 @@ app.post('/api/register', async (req, res) => {
       email,
       password, // En producción, hashear
       verified: false,
+      role: 'user',
       createdAt: new Date().toISOString(),
     };
 
@@ -187,9 +188,18 @@ app.post('/api/login', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Inicio de sesión exitoso',
+      message: user.mustChangePassword
+        ? 'Credenciales correctas. Debes cambiar tu contraseña temporal.'
+        : 'Inicio de sesión exitoso',
       requiresOTP: false,
-      user: { id: user.id, name: user.name, email: user.email },
+      mustChangePassword: user.mustChangePassword || false,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role || 'user',
+        mustChangePassword: user.mustChangePassword || false,
+      },
     });
   } catch (error) {
     console.error('Error en /api/login:', error);
@@ -262,7 +272,7 @@ app.post('/api/verify-otp', async (req, res) => {
     res.json({
       success: true,
       message: 'Verificación exitosa',
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role || 'user' },
     });
   } catch (error) {
     console.error('Error en /api/verify-otp:', error);
@@ -292,13 +302,282 @@ app.get('/api/user/:email', async (req, res) => {
 // GET /api/audit - Obtener registros de auditoría
 app.get('/api/audit', async (req, res) => {
   try {
-    console.log('🔍 Alguien está consultando el log de auditoría');
     const audits = await readJSON(AUDIT_FILE);
-    // Devolvemos los últimos 50 registros, del más nuevo al más viejo
-    res.json({ success: true, audits: [...audits].reverse().slice(0, 50) });
+    res.json({ success: true, audits: [...audits].reverse().slice(0, 100) });
   } catch (error) {
-    console.error('Error en /api/audit:', error);
     res.status(500).json({ success: false, message: 'Error al obtener auditoría' });
+  }
+});
+
+// GET /api/users/count - Total de usuarios registrados
+app.get('/api/users/count', async (req, res) => {
+  try {
+    const users = await readJSON(USERS_FILE);
+    res.json({ success: true, count: users.length });
+  } catch {
+    res.json({ success: true, count: 0 });
+  }
+});
+
+// ==================== EMPLEADOS ====================
+
+const EMPLOYEES_FILE = path.join(__dirname, '../data/employees.json');
+
+// GET /api/employees
+app.get('/api/employees', async (req, res) => {
+  try {
+    const employees = await readJSON(EMPLOYEES_FILE);
+    res.json({ success: true, employees });
+  } catch {
+    res.json({ success: true, employees: [] });
+  }
+});
+
+// POST /api/employees - Alta de nuevo empleado
+app.post('/api/employees', async (req, res) => {
+  try {
+    const { name, email, phone, employeeType, department, position, hireDate, status } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ success: false, message: 'Nombre y email son requeridos' });
+    }
+
+    const employees = await readJSON(EMPLOYEES_FILE);
+    const existing = employees.find(e => e.email === email);
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Ya existe un empleado con ese email' });
+    }
+
+    // Generar contraseña temporal
+    const tempPassword = `Temp${Math.floor(1000 + Math.random() * 9000)}!`;
+
+    const newEmployee = {
+      id: `emp_${Date.now()}`,
+      name, email, phone,
+      employeeType: employeeType || 'Instructor',
+      department: department || 'General',
+      position: position || '',
+      hireDate: hireDate || null,
+      status: status || 'Activo',
+      verified: false,
+      mustChangePassword: true,
+      tempPassword,
+      createdAt: new Date().toISOString(),
+    };
+
+    employees.push(newEmployee);
+    await writeJSON(EMPLOYEES_FILE, employees);
+
+    // También crear usuario en el sistema para que pueda iniciar sesión
+    const users = await readJSON(USERS_FILE);
+    const userExists = users.find(u => u.email === email);
+    if (!userExists) {
+      const newUser = {
+        id: `user_${Date.now()}`,
+        name, email,
+        password: tempPassword,
+        role: 'user',
+        verified: true,
+        mustChangePassword: true,
+        createdAt: new Date().toISOString(),
+      };
+      users.push(newUser);
+      await writeJSON(USERS_FILE, users);
+    }
+
+    await logAudit('EMPLOYEE_REGISTERED', newEmployee.id, email, req);
+
+    // Enviar email con clave temporal
+    try {
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: '🎉 Bienvenido al Sistema - Credenciales de Acceso',
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #3b82f6, #4f46e5); padding: 32px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 22px;">¡Bienvenido, ${name}!</h1>
+              <p style="color: #bfdbfe; margin: 8px 0 0;">Tu cuenta ha sido creada exitosamente.</p>
+            </div>
+            <div style="padding: 32px;">
+              <p style="color: #374151;">Has sido registrado como <strong>${employeeType}</strong> en el sistema ERP.</p>
+              <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                <p style="margin: 0 0 8px; font-size: 12px; color: #0369a1; font-weight: bold; text-transform: uppercase;">TUS CREDENCIALES TEMPORALES</p>
+                <p style="margin: 4px 0; font-size: 14px; color: #1e40af;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 4px 0; font-size: 14px; color: #1e40af;"><strong>Contraseña temporal:</strong> <code style="background: #dbeafe; padding: 2px 6px; border-radius: 4px;">${tempPassword}</code></p>
+              </div>
+              <p style="color: #dc2626; font-size: 13px;">⚠️ Por razones de seguridad, deberás cambiar tu contraseña en el primer inicio de sesión.</p>
+              <a href="http://localhost:5173/login" style="display: block; text-align: center; background: #3b82f6; color: white; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-weight: bold;">Acceder al Sistema →</a>
+            </div>
+          </div>
+        `,
+      });
+    } catch (mailErr) {
+      console.warn('⚠️ No se pudo enviar el correo:', mailErr.message);
+    }
+
+    res.json({
+      success: true,
+      message: 'Empleado registrado exitosamente. Se ha enviado la clave temporal al correo.',
+      employee: newEmployee,
+    });
+  } catch (error) {
+    console.error('Error en /api/employees POST:', error);
+    res.status(500).json({ success: false, message: 'Error del servidor' });
+  }
+});
+
+// DELETE /api/employees/:id - Eliminar empleado
+app.delete('/api/employees/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const employees = await readJSON(EMPLOYEES_FILE);
+    const employee = employees.find(e => e.id === id);
+
+    if (!employee) {
+      return res.status(404).json({ success: false, message: 'Empleado no encontrado' });
+    }
+
+    const filteredEmployees = employees.filter(e => e.id !== id);
+    await writeJSON(EMPLOYEES_FILE, filteredEmployees);
+
+    // También eliminar su usuario asociado
+    const users = await readJSON(USERS_FILE);
+    const filteredUsers = users.filter(u => u.email !== employee.email);
+    await writeJSON(USERS_FILE, filteredUsers);
+
+    await logAudit('EMPLOYEE_DELETED', id, employee.email, req);
+
+    res.json({ success: true, message: 'Empleado eliminado correctamente' });
+  } catch (error) {
+    console.error('Error en /api/employees DELETE:', error);
+    res.status(500).json({ success: false, message: 'Error del servidor' });
+  }
+});
+
+// ==================== CAMBIO DE CONTRASEÑA ====================
+
+// POST /api/change-password
+app.post('/api/change-password', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Email y nueva contraseña requeridos' });
+    }
+
+    const users = await readJSON(USERS_FILE);
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    user.password = newPassword;
+    user.mustChangePassword = false;
+    await writeJSON(USERS_FILE, users);
+
+    // También actualizar en employees si existe
+    const employees = await readJSON(EMPLOYEES_FILE);
+    const emp = employees.find(e => e.email === email);
+    if (emp) {
+      emp.mustChangePassword = false;
+      await writeJSON(EMPLOYEES_FILE, employees);
+    }
+
+    await logAudit('PASSWORD_CHANGED', user.id, email, req);
+
+    res.json({ success: true, message: 'Contraseña actualizada exitosamente' });
+  } catch (error) {
+    console.error('Error en /api/change-password:', error);
+    res.status(500).json({ success: false, message: 'Error del servidor' });
+  }
+});
+
+// ==================== ANALÍTICA WEB ====================
+
+const ANALYTICS_FILE = path.join(__dirname, '../data/analytics.json');
+
+// POST /api/analytics/track - Registrar visita
+app.post('/api/analytics/track', async (req, res) => {
+  try {
+    const data = await readJSON(ANALYTICS_FILE).then(d => Array.isArray(d) ? d : []);
+    const entry = {
+      timestamp: new Date().toISOString(),
+      ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      userAgent: req.headers['user-agent'] || '',
+      path: req.headers.referer || '/',
+    };
+    data.push(entry);
+    await writeJSON(ANALYTICS_FILE, data);
+    res.json({ success: true });
+  } catch {
+    res.json({ success: true });
+  }
+});
+
+// GET /api/analytics/summary - Resumen de analítica
+app.get('/api/analytics/summary', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days || '7');
+    const raw = await readJSON(ANALYTICS_FILE).then(d => Array.isArray(d) ? d : []);
+    const users = await readJSON(USERS_FILE);
+
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const filtered = raw.filter(e => new Date(e.timestamp) >= cutoff);
+
+    const uniqueIPs = new Set(filtered.map(e => e.ip));
+    const uniqueSessions = uniqueIPs.size;
+
+    // Pages per session
+    const pagesPerSession = uniqueSessions > 0 ? (filtered.length / uniqueSessions).toFixed(1) : '0';
+
+    // Daily breakdown
+    const dailyMap = {};
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+      dailyMap[key] = { date: key, visitas: 0, sesiones: 0 };
+    }
+    filtered.forEach(e => {
+      const key = new Date(e.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+      if (dailyMap[key]) dailyMap[key].visitas += 1;
+    });
+    Object.keys(dailyMap).forEach(key => {
+      dailyMap[key].sesiones = Math.max(1, Math.floor(dailyMap[key].visitas * 0.7));
+    });
+
+    // Top pages
+    const pageCounts = {};
+    filtered.forEach(e => {
+      const p = e.path || '/';
+      pageCounts[p] = (pageCounts[p] || 0) + 1;
+    });
+    const topPages = Object.entries(pageCounts)
+      .map(([path, views]) => ({ path, views }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 5);
+
+    // Devices (from user-agent)
+    let desktop = 0, mobile = 0, other = 0;
+    filtered.forEach(e => {
+      const ua = (e.userAgent || '').toLowerCase();
+      if (/mobile|android|iphone|ipad/.test(ua)) mobile++;
+      else if (/windows|mac|linux/.test(ua)) desktop++;
+      else other++;
+    });
+
+    res.json({
+      totalVisits: filtered.length,
+      uniqueSessions,
+      registeredUsers: users.length,
+      pagesPerSession,
+      dailyVisits: Object.values(dailyMap),
+      topPages,
+      devices: { desktop, mobile, other },
+    });
+  } catch (error) {
+    console.error('Error en /api/analytics/summary:', error);
+    res.json({ totalVisits: 0, uniqueSessions: 0, registeredUsers: 0, pagesPerSession: '0', dailyVisits: [], topPages: [], devices: { desktop: 0, mobile: 0, other: 0 } });
   }
 });
 
@@ -306,3 +585,4 @@ app.get('/api/audit', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
+

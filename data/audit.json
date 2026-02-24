@@ -1,119 +1,137 @@
 [
   {
-    "id": "audit_1771348942217",
-    "timestamp": "2026-02-17T17:22:22.217Z",
-    "action": "LOGIN_ATTEMPT_SUCCESS_WAITING_OTP",
-    "userId": "user_1771343194218",
-    "email": "vegasoft09@gmail.com",
+    "id": "audit_1771942567474",
+    "timestamp": "2026-02-24T14:16:07.474Z",
+    "action": "EMPLOYEE_REGISTERED",
+    "userId": "emp_1771942567470",
+    "email": "acosta.wp076@gmail.com",
     "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771348977364",
-    "timestamp": "2026-02-17T17:22:57.364Z",
-    "action": "OTP_VERIFIED_SUCCESS",
-    "userId": "user_1771343194218",
-    "email": "vegasoft09@gmail.com",
+    "id": "audit_1771942660975",
+    "timestamp": "2026-02-24T14:17:40.975Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_1771942567472",
+    "email": "acosta.wp076@gmail.com",
     "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771349051117",
-    "timestamp": "2026-02-17T17:24:11.117Z",
-    "action": "USER_REGISTERED",
-    "userId": "user_1771349051115",
-    "email": "hernandz.j2004@gmail.com",
+    "id": "audit_1771942751535",
+    "timestamp": "2026-02-24T14:19:11.535Z",
+    "action": "PASSWORD_CHANGED",
+    "userId": "user_1771942567472",
+    "email": "acosta.wp076@gmail.com",
     "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771349093718",
-    "timestamp": "2026-02-17T17:24:53.718Z",
-    "action": "OTP_VERIFIED_SUCCESS",
-    "userId": "user_1771349051115",
-    "email": "hernandz.j2004@gmail.com",
+    "id": "audit_1771942772972",
+    "timestamp": "2026-02-24T14:19:32.972Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_admin_001",
+    "email": "admin@erp.com",
     "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771349281202",
-    "timestamp": "2026-02-17T17:28:01.202Z",
-    "action": "USER_REGISTERED",
-    "userId": "user_1771349281200",
-    "email": "isistemas2022@gmail.com",
-    "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
-  },
-  {
-    "id": "audit_1771349294226",
-    "timestamp": "2026-02-17T17:28:14.226Z",
-    "action": "LOGIN_ATTEMPT_SUCCESS_WAITING_OTP",
-    "userId": "user_1771343194218",
-    "email": "vegasoft09@gmail.com",
-    "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
-  },
-  {
-    "id": "audit_1771349320159",
-    "timestamp": "2026-02-17T17:28:40.159Z",
-    "action": "OTP_VERIFIED_SUCCESS",
-    "userId": "user_1771343194218",
-    "email": "vegasoft09@gmail.com",
-    "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
-  },
-  {
-    "id": "audit_1771349371804",
-    "timestamp": "2026-02-17T17:29:31.804Z",
-    "action": "LOGIN_ATTEMPT_SUCCESS_WAITING_OTP",
-    "userId": "user_1771349281200",
-    "email": "isistemas2022@gmail.com",
-    "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
-  },
-  {
-    "id": "audit_1771349386888",
-    "timestamp": "2026-02-17T17:29:46.888Z",
-    "action": "OTP_VERIFIED_SUCCESS",
-    "userId": "user_1771349281200",
-    "email": "isistemas2022@gmail.com",
-    "ip": "::1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0"
-  },
-  {
-    "id": "audit_1771937842588",
-    "timestamp": "2026-02-24T12:57:22.588Z",
+    "id": "audit_1771942791950",
+    "timestamp": "2026-02-24T14:19:51.950Z",
     "action": "LOGIN_FAILED",
     "userId": "N/A",
-    "email": "vegasoft09@gmail.com",
+    "email": "acosta.wp076@gmail.com",
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771937864901",
-    "timestamp": "2026-02-24T12:57:44.901Z",
+    "id": "audit_1771942798868",
+    "timestamp": "2026-02-24T14:19:58.868Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_1771942567472",
+    "email": "acosta.wp076@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771942994496",
+    "timestamp": "2026-02-24T14:23:14.496Z",
+    "action": "EMPLOYEE_REGISTERED",
+    "userId": "emp_1771942994492",
+    "email": "hernandz.j2004@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771943042719",
+    "timestamp": "2026-02-24T14:24:02.719Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_1771942994494",
+    "email": "hernandz.j2004@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771943089286",
+    "timestamp": "2026-02-24T14:24:49.286Z",
+    "action": "PASSWORD_CHANGED",
+    "userId": "user_1771942994494",
+    "email": "hernandz.j2004@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771946587313",
+    "timestamp": "2026-02-24T15:23:07.313Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_admin_001",
+    "email": "admin@erp.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771946780533",
+    "timestamp": "2026-02-24T15:26:20.533Z",
+    "action": "EMPLOYEE_REGISTERED",
+    "userId": "emp_1771946780528",
+    "email": "isistemas2022@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771946847046",
+    "timestamp": "2026-02-24T15:27:27.046Z",
     "action": "LOGIN_FAILED",
     "userId": "N/A",
-    "email": "vegasoft09@gmail.com",
+    "email": "isistemas2022@gmail.com",
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771937884664",
-    "timestamp": "2026-02-24T12:58:04.664Z",
-    "action": "LOGIN_ATTEMPT_SUCCESS_WAITING_OTP",
-    "userId": "user_1771343194218",
-    "email": "vegasoft09@gmail.com",
+    "id": "audit_1771946857648",
+    "timestamp": "2026-02-24T15:27:37.648Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_1771946780530",
+    "email": "isistemas2022@gmail.com",
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   },
   {
-    "id": "audit_1771937914942",
-    "timestamp": "2026-02-24T12:58:34.942Z",
-    "action": "OTP_VERIFIED_SUCCESS",
-    "userId": "user_1771343194218",
-    "email": "vegasoft09@gmail.com",
+    "id": "audit_1771946893827",
+    "timestamp": "2026-02-24T15:28:13.827Z",
+    "action": "PASSWORD_CHANGED",
+    "userId": "user_1771946780530",
+    "email": "isistemas2022@gmail.com",
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771947005894",
+    "timestamp": "2026-02-24T15:30:05.894Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_1771942994494",
+    "email": "hernandz.j2004@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
   }
 ]

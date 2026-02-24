@@ -1,34 +1,42 @@
 [
   {
-    "id": "user_1771343194218",
-    "name": "eduardo",
-    "email": "vegasoft09@gmail.com",
-    "password": "123456",
+    "id": "user_admin_001",
+    "name": "Administrador",
+    "email": "admin@erp.com",
+    "password": "admin",
+    "role": "admin",
     "verified": true,
-    "createdAt": "2026-02-17T15:46:34.218Z"
+    "mustChangePassword": false,
+    "createdAt": "2026-02-24T09:00:00.000Z"
   },
   {
-    "id": "user_1771346673579",
-    "name": "edu",
-    "email": "eduar05066@gmail.com",
-    "password": "123456",
-    "verified": false,
-    "createdAt": "2026-02-17T16:44:33.579Z"
+    "id": "user_1771942567472",
+    "name": "Wilson",
+    "email": "acosta.wp076@gmail.com",
+    "password": "RipX1234",
+    "role": "user",
+    "verified": true,
+    "mustChangePassword": false,
+    "createdAt": "2026-02-24T14:16:07.472Z"
   },
   {
-    "id": "user_1771349051115",
-    "name": "José Ignacio Hernández Guerra",
+    "id": "user_1771942994494",
+    "name": "José Ignacio Hernández",
     "email": "hernandz.j2004@gmail.com",
-    "password": "123456",
+    "password": "#5368ig2207Hg",
+    "role": "user",
     "verified": true,
-    "createdAt": "2026-02-17T17:24:11.115Z"
+    "mustChangePassword": false,
+    "createdAt": "2026-02-24T14:23:14.494Z"
   },
   {
-    "id": "user_1771349281200",
-    "name": "Erick",
+    "id": "user_1771946780530",
+    "name": "Huaman ",
     "email": "isistemas2022@gmail.com",
-    "password": "123456",
+    "password": "#5368ig2207Hg",
+    "role": "user",
     "verified": true,
-    "createdAt": "2026-02-17T17:28:01.200Z"
+    "mustChangePassword": false,
+    "createdAt": "2026-02-24T15:26:20.530Z"
   }
 ]

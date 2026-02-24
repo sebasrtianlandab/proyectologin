@@ -1,0 +1,61 @@
+[
+  {
+    "id": "emp_admin_001",
+    "name": "Administrador",
+    "email": "admin@erp.com",
+    "phone": "000000000",
+    "employeeType": "Administrador",
+    "department": "Dirección",
+    "position": "Gerente General",
+    "hireDate": "2026-02-24",
+    "status": "Activo",
+    "verified": true,
+    "mustChangePassword": false,
+    "createdAt": "2026-02-24T09:00:00.000Z"
+  },
+  {
+    "id": "emp_1771942567470",
+    "name": "Wilson",
+    "email": "acosta.wp076@gmail.com",
+    "phone": "910175892",
+    "employeeType": "Asist. Administrativo",
+    "department": "Soporte",
+    "position": "Recepcionista",
+    "hireDate": "2026-02-24",
+    "status": "Activo",
+    "verified": false,
+    "mustChangePassword": false,
+    "tempPassword": "Temp4147!",
+    "createdAt": "2026-02-24T14:16:07.470Z"
+  },
+  {
+    "id": "emp_1771942994492",
+    "name": "José Ignacio Hernández",
+    "email": "hernandz.j2004@gmail.com",
+    "phone": "918918147",
+    "employeeType": "Desarrollador",
+    "department": "Desarrollo",
+    "position": "Backend Developer",
+    "hireDate": "2026-02-24",
+    "status": "Activo",
+    "verified": false,
+    "mustChangePassword": false,
+    "tempPassword": "Temp9771!",
+    "createdAt": "2026-02-24T14:23:14.492Z"
+  },
+  {
+    "id": "emp_1771946780528",
+    "name": "Huaman ",
+    "email": "isistemas2022@gmail.com",
+    "phone": "915009603",
+    "employeeType": "Instructor",
+    "department": "Docente",
+    "position": "Instructor Senior",
+    "hireDate": "2026-02-24",
+    "status": "Activo",
+    "verified": false,
+    "mustChangePassword": false,
+    "tempPassword": "Temp1103!",
+    "createdAt": "2026-02-24T15:26:20.528Z"
+  }
+]

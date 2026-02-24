@@ -1,10 +1,10 @@
-// Model: User
 export interface User {
   id: string;
-  name: string; // Nombre del usuario
+  name: string;
   email: string;
-  password: string; // En producción, esto debería estar hasheado
+  password: string;
   verified: boolean;
+  role: 'admin' | 'user';
   createdAt: string;
 }
 
@@ -19,5 +19,8 @@ export interface OTPData {
 export interface Session {
   userId: string;
   email: string;
+  role: 'admin' | 'user';
   loginAt: string;
+  name?: string;
+  mustChangePassword?: boolean;
 }
