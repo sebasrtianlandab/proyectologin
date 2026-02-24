@@ -256,7 +256,45 @@ Eliminar todos los mensajes de desarrollo y dejar una interfaz 100% profesional.
 
 ---
 
-## 📚 Fase 7: Documentación y Organización
+## � Fase 7: Módulo de Auditoría Integral
+
+### Objetivo
+Implementar un sistema de rastreo de seguridad que registre cada acción crítica en el servidor y permita su visualización administrativa.
+
+### Actividades
+
+#### 7.1 Backend (Logging Automático)
+- Creación de función helper `logAudit` en `server.js`.
+- Registro automático de:
+    - `USER_REGISTERED`: Al crear cuenta.
+    - `LOGIN_FAILED`: Intentos fallidos de contraseña.
+    - `LOGIN_ATTEMPT_SUCCESS_WAITING_OTP`: Login correcto esperando 2FA.
+    - `OTP_VERIFIED_SUCCESS`: Acceso concediddo final.
+- Captura de metadatos: IP del cliente, Timestamp y User-Agent.
+
+#### 7.2 API de Auditoría
+- Nuevo endpoint `GET /api/audit`.
+- Lógica de retorno: Últimos 50 registros en orden cronológico inverso.
+
+#### 7.3 Frontend (Visualización)
+- Creación de `AuditView.tsx`.
+- Implementación de **Dashboard de Seguridad**:
+    - Estadísticas dinámicas (Eventos totales, Alertas críticas, IPs únicas).
+    - Tabla interactiva con badges de estado.
+    - Sistema de actualización en tiempo real ("Live Logs").
+
+### Archivos Creados/Modificados
+- `server/server.js` (Funciones de log y rutas API)
+- `src/app/components/auth/AuditView.tsx` (Nueva vista)
+- `src/app/routes.tsx` (Ruta `/audit` protegida)
+- `data/audit.json` (Archivo de persistencia)
+
+### Duración
+1 hora
+
+---
+
+## �📚 Fase 8: Documentación y Organización
 
 ### Objetivo
 Documentar el proyecto completo y organizar archivos.
@@ -294,12 +332,12 @@ Centralización de toda la documentación.
 ## 📊 Resumen del Proyecto
 
 ### Tiempo Total de Desarrollo
-**~5 horas** (incluyendo análisis, implementación, pruebas y documentación)
+**~6 horas** (incluyendo análisis, implementación, pruebas y documentación)
 
 ### Líneas de Código
-- **Backend**: ~280 líneas (JavaScript)
-- **Frontend**: ~800 líneas modificadas (TypeScript/React)
-- **Documentación**: ~500 líneas (Markdown)
+- **Backend**: ~315 líneas (JavaScript)
+- **Frontend**: ~1000 líneas modificadas (TypeScript/React)
+- **Documentación**: ~600 líneas (Markdown)
 
 ### Tecnologías Utilizadas
 - **Frontend**: React, Vite, TypeScript, Tailwind CSS, Motion, React Router
