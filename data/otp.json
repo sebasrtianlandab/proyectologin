@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "userId": "user_1771343194218",
+    "email": "vegasoft09@gmail.com",
+    "code": "546035",
+    "attempts": 0,
+    "maxAttempts": 3,
+    "expiresAt": "2026-02-17T17:04:30.927Z"
+  }
+]

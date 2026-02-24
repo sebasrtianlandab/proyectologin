@@ -65,17 +65,8 @@ Tabla con historial de actividad y estadísticas básicas (total de logins, IPs 
 4. Estrategia de Implementación Recomendada
 Para asegurar la estabilidad del proyecto en Antigravity, se sugiere seguir un desarrollo por fases:
 
-
 Fase 1: Validar el enrutamiento y la estructura base.
-
-
 Fase 2: Establecer la lectura/escritura en archivos JSON.
-
-
 Fase 3: Implementar el flujo de registro y generación de OTP.
-
-
 Fase 4: Activar la validación de seguridad y protección de rutas.
-
-
 Fase 5: Integrar el sistema de auditoría final.
