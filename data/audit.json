@@ -133,5 +133,23 @@
     "email": "hernandz.j2004@gmail.com",
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+  },
+  {
+    "id": "audit_1771949309839",
+    "timestamp": "2026-02-24T16:08:29.839Z",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "userId": "user_admin_001",
+    "email": "admin@erp.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
+  },
+  {
+    "id": "audit_1771949415362",
+    "timestamp": "2026-02-24T16:10:15.362Z",
+    "action": "EMPLOYEE_REGISTERED",
+    "userId": "emp_1771949415358",
+    "email": "floresthiagop1@gmail.com",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 OPR/127.0.0.0"
   }
 ]

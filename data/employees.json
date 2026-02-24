@@ -57,5 +57,20 @@
     "mustChangePassword": false,
     "tempPassword": "Temp1103!",
     "createdAt": "2026-02-24T15:26:20.528Z"
+  },
+  {
+    "id": "emp_1771949415358",
+    "name": "Thiago fabian",
+    "email": "floresthiagop1@gmail.com",
+    "phone": "965848073",
+    "employeeType": "Instructor",
+    "department": "Docente",
+    "position": "",
+    "hireDate": "2026-02-24",
+    "status": "Activo",
+    "verified": false,
+    "mustChangePassword": true,
+    "tempPassword": "Temp2714!",
+    "createdAt": "2026-02-24T16:10:15.358Z"
   }
 ]

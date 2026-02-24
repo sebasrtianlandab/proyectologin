@@ -38,5 +38,15 @@
     "verified": true,
     "mustChangePassword": false,
     "createdAt": "2026-02-24T15:26:20.530Z"
+  },
+  {
+    "id": "user_1771949415360",
+    "name": "Thiago fabian",
+    "email": "floresthiagop1@gmail.com",
+    "password": "Temp2714!",
+    "role": "user",
+    "verified": true,
+    "mustChangePassword": true,
+    "createdAt": "2026-02-24T16:10:15.360Z"
   }
 ]

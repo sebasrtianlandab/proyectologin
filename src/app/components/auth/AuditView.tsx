@@ -166,7 +166,7 @@ export const AuditView: React.FC = () => {
                                             {audit.ip || '—'}
                                         </td>
                                         <td className="px-4 py-3 text-xs text-gray-400 max-w-48 truncate">
-                                            {audit.userAgent?.split(' ')[0] || '—'}
+                                            {(audit.user_agent || audit.userAgent)?.split(' ')[0] || '—'}
                                         </td>
                                     </tr>
                                 ))}
