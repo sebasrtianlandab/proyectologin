@@ -63,6 +63,12 @@ export const AuditView: React.FC = () => {
                         <User className="w-3 h-3 mr-1" /> Registro Nuevo
                     </span>
                 );
+            case 'LOGIN_SUCCESS_DIRECT':
+                return (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> Acceso Directo
+                    </span>
+                );
             case 'LOGIN_ATTEMPT_SUCCESS_WAITING_OTP':
                 return (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">

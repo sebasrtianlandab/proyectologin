@@ -6,6 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "server": "cd server && npm run server",
     "reset-db": "node -e \"require('fs').writeFileSync('data/users.json','[]');require('fs').writeFileSync('data/otp.json','[]');console.log('✅ Base de datos limpiada')\""
   },
   "dependencies": {

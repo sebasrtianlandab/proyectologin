@@ -5,7 +5,7 @@ import { AuthService } from '../../../models/AuthService';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { toast } from 'sonner';
-import { LogOut, Shield, User, Mail, Calendar, CheckCircle2, Sparkles, Activity } from 'lucide-react';
+import { LogOut, Shield, User, Mail, Calendar, CheckCircle2, Sparkles, Activity, UserPlus } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function DashboardView() {
@@ -181,49 +181,68 @@ export function DashboardView() {
 
           {/* Módulo de Administración (Prototipo Frontend) */}
           <motion.div
-            className="md:col-span-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className="bg-gradient-to-r from-slate-900/90 to-blue-900/40 backdrop-blur-xl border-blue-500/30 shadow-xl shadow-blue-500/10">
+            <Card className="bg-gradient-to-r from-slate-900/90 to-blue-900/40 backdrop-blur-xl border-blue-500/30 shadow-xl shadow-blue-500/10 h-full">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
                     <Activity className="w-5 h-5 text-blue-400" />
-                    <CardTitle className="text-white">Panel de Administración</CardTitle>
+                    <CardTitle className="text-white">Seguridad y Auditoría</CardTitle>
                   </div>
-                  <CardDescription className="text-blue-200/70">Herramientas de supervisión de seguridad</CardDescription>
-                </div>
-                <div className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-1 rounded border border-blue-500/30 uppercase tracking-tighter">
-                  Acceso Admin
+                  <CardDescription className="text-blue-200/70">Monitoreo de accesos y logs</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <div className="flex-1">
-                    <p className="text-sm text-slate-300 mb-4">
-                      Como administrador, tienes acceso a la visualización de todos los logs de auditoría,
-                      intentos de inicio de sesión, y registro de IPs en tiempo real.
-                    </p>
-                    <Button
-                      onClick={() => navigate('/audit')}
-                      className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 px-6"
-                    >
-                      <Activity className="w-4 h-4 mr-2" />
-                      Ir al Módulo de Auditoría
-                    </Button>
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-300">
+                    Visualización de logs de auditoría, intentos de inicio de sesión y registro de IPs en tiempo real.
+                  </p>
+                  <Button
+                    onClick={() => navigate('/audit')}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20"
+                  >
+                    <Activity className="w-4 h-4 mr-2" />
+                    Ver Auditoría
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Módulo de Recursos Humanos (NUEVO) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-r from-slate-900/90 to-indigo-900/40 backdrop-blur-xl border-indigo-500/30 shadow-xl shadow-indigo-500/10 h-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <UserPlus className="w-5 h-5 text-indigo-400" />
+                    <CardTitle className="text-white">Gestión de Personal</CardTitle>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 w-full sm:w-auto">
-                    <div className="bg-slate-800/50 p-3 rounded-lg border border-blue-500/10 text-center">
-                      <p className="text-xs text-blue-400 font-bold uppercase">Eventos</p>
-                      <p className="text-xl font-bold text-white">1.2k</p>
-                    </div>
-                    <div className="bg-slate-800/50 p-3 rounded-lg border border-blue-500/10 text-center">
-                      <p className="text-xs text-red-400 font-bold uppercase">Alertas</p>
-                      <p className="text-xl font-bold text-white">42</p>
-                    </div>
-                  </div>
+                  <CardDescription className="text-indigo-200/70">Módulo exclusivo de Recursos Humanos</CardDescription>
+                </div>
+                <div className="bg-indigo-500/20 text-indigo-300 text-[10px] font-bold px-2 py-1 rounded border border-indigo-500/30 uppercase tracking-tighter">
+                  RRHH
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-300">
+                    Utilice esta herramienta para dar de alta a nuevos empleados en el sistema y disparar el flujo de verificación.
+                  </p>
+                  <Button
+                    onClick={() => navigate('/register')}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Registrar Nuevo Empleado
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -12,12 +12,16 @@ export const router = createBrowserRouter([
     element: <Navigate to="/login" replace />,
   },
   {
-    path: '/register',
-    element: <RegisterView />,
-  },
-  {
     path: '/login',
     element: <LoginView />,
+  },
+  {
+    path: '/register',
+    element: (
+      <ProtectedRoute>
+        <RegisterView />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/verify-otp',

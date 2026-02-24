@@ -7,7 +7,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { toast } from 'sonner';
-import { Mail, Lock, UserPlus, LogIn, Sparkles, User } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn, Sparkles, User, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function RegisterView() {
@@ -118,16 +118,25 @@ export function RegisterView() {
       >
         <Card className="w-full bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-2xl shadow-cyan-500/10">
           <CardHeader className="space-y-1">
+            <div className="absolute top-4 left-4">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-white/5 rounded-full transition-all"
+                title="Volver al Dashboard"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            </div>
             <motion.div
               className="flex items-center justify-center mb-4"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
-              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-3 rounded-full relative">
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-full relative">
                 <UserPlus className="w-8 h-8 text-white" />
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full blur-xl opacity-50"
+                  className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full blur-xl opacity-50"
                   animate={{
                     scale: [1, 1.2, 1],
                     opacity: [0.5, 0.8, 0.5],
@@ -140,9 +149,9 @@ export function RegisterView() {
                 />
               </div>
             </motion.div>
-            <CardTitle className="text-2xl text-center text-white">Crear cuenta</CardTitle>
+            <CardTitle className="text-2xl text-center text-white font-bold tracking-tight">Registro de Personal</CardTitle>
             <CardDescription className="text-center text-cyan-200/70">
-              Ingresa tus datos para registrarte
+              Alta de nuevos empleados en el sistema (RRHH)
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleRegister}>
@@ -237,7 +246,7 @@ export function RegisterView() {
               >
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 relative overflow-hidden group"
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-300 relative overflow-hidden group"
                   disabled={isLoading}
                 >
                   <motion.div
@@ -254,23 +263,16 @@ export function RegisterView() {
                     {isLoading ? (
                       <>
                         <Sparkles className="w-4 h-4 animate-spin" />
-                        Registrando...
+                        Procesando Alta...
                       </>
                     ) : (
-                      'Registrarse'
+                      'Completar Registro de Empleado'
                     )}
                   </span>
                 </Button>
               </motion.div>
-              <div className="text-sm text-center text-cyan-200/60">
-                ¿Ya tienes cuenta?{' '}
-                <button
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  className="text-cyan-400 hover:text-cyan-300 hover:underline inline-flex items-center gap-1 transition-colors"
-                >
-                  Inicia sesión <LogIn className="w-3 h-3" />
-                </button>
+              <div className="text-xs text-center text-slate-500 italic">
+                * El empleado recibirá un código de verificación en su correo electrónico corporativo.
               </div>
             </CardFooter>
           </form>

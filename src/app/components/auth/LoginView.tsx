@@ -220,16 +220,7 @@ export function LoginView() {
                   </span>
                 </Button>
               </motion.div>
-              <div className="text-sm text-center text-cyan-200/60">
-                ¿No tienes cuenta?{' '}
-                <button
-                  type="button"
-                  onClick={() => navigate('/register')}
-                  className="text-cyan-400 hover:text-cyan-300 hover:underline inline-flex items-center gap-1 transition-colors"
-                >
-                  Regístrate <UserPlus className="w-3 h-3" />
-                </button>
-              </div>
+
             </CardFooter>
           </form>
         </Card>

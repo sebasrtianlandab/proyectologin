@@ -159,9 +159,9 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
     }
 
-    await logAudit('LOGIN_ATTEMPT_SUCCESS_WAITING_OTP', user.id, email, req);
+    await logAudit('LOGIN_SUCCESS_DIRECT', user.id, email, req);
 
-    // SIEMPRE generar OTP para autenticación de dos factores
+    /* Lógica de OTP (Mantenida pero desactivada para acceso directo ERP)
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const otpData = {
       userId: user.id,
@@ -177,25 +177,19 @@ app.post('/api/login', async (req, res) => {
     filtered.push(otpData);
     await writeJSON(OTP_FILE, filtered);
 
-    // Enviar email
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
       to: email,
       subject: 'Código de Verificación OTP - Login',
-      html: `
-        <h2>Código de Verificación de Acceso</h2>
-        <p>Has iniciado sesión. Tu código de verificación es:</p>
-        <h1 style="font-size: 32px; color: #4CAF50;">${otpCode}</h1>
-        <p>Este código expira en 10 minutos.</p>
-        <p>Tienes 3 intentos para ingresar el código correcto.</p>
-      `,
+      html: `...`,
     });
+    */
 
     return res.json({
       success: true,
-      message: 'Credenciales correctas. Se ha enviado un código OTP a tu email.',
-      requiresOTP: true,
-      userId: user.id,
+      message: 'Inicio de sesión exitoso',
+      requiresOTP: false,
+      user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (error) {
     console.error('Error en /api/login:', error);
