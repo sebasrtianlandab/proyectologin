@@ -39,11 +39,11 @@ export const AuditView: React.FC = () => {
             'OTP_VERIFIED_SUCCESS': { label: 'OTP Verificado', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
             'LOGIN_SUCCESS_DIRECT': { label: 'Acceso Directo', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
             'LOGIN_FAILED': { label: 'Intento Fallido', color: 'bg-red-100 text-red-800', icon: XCircle },
-            'USER_REGISTERED': { label: 'Registro Usuario', color: 'bg-blue-100 text-blue-800', icon: User },
-            'EMPLOYEE_REGISTERED': { label: 'Alta Empleado', color: 'bg-indigo-100 text-indigo-800', icon: User },
-            'PASSWORD_CHANGED': { label: 'Cambio Contraseña', color: 'bg-purple-100 text-purple-800', icon: ShieldCheck },
+            'USER_REGISTERED': { label: 'Registro Usuario', color: 'bg-viision-100 text-viision-800', icon: User },
+            'EMPLOYEE_REGISTERED': { label: 'Alta Empleado', color: 'bg-viision-100 text-viision-800', icon: User },
+            'PASSWORD_CHANGED': { label: 'Cambio Contraseña', color: 'bg-viision-100 text-viision-800', icon: ShieldCheck },
             'EMPLOYEE_DELETED': { label: 'Baja Empleado', color: 'bg-red-100 text-red-800', icon: Trash2 },
-            'LOGIN_ATTEMPT_SUCCESS_WAITING_OTP': { label: 'Esperando OTP', color: 'bg-amber-100 text-amber-800', icon: AlertCircle },
+            'LOGIN_ATTEMPT_SUCCESS_WAITING_OTP': { label: 'Esperando OTP', color: 'bg-viision-100 text-viision-800', icon: AlertCircle },
         };
         const def = map[action] || { label: action, color: 'bg-gray-100 text-gray-700', icon: Activity };
         const Icon = def.icon;
@@ -94,9 +94,9 @@ export const AuditView: React.FC = () => {
                 {[
                     { label: 'Accesos Exitosos', value: successCount, color: 'text-green-600 bg-green-50', icon: CheckCircle2 },
                     { label: 'Intentos Fallidos', value: failedCount, color: 'text-red-600 bg-red-50', icon: XCircle },
-                    { label: 'Registros', value: registeredCount, color: 'text-blue-600 bg-blue-50', icon: User },
+                    { label: 'Registros', value: registeredCount, color: 'text-viision-600 bg-viision-50', icon: User },
                 ].map(stat => (
-                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow">
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
@@ -111,22 +111,22 @@ export const AuditView: React.FC = () => {
             </div>
 
             {/* Search */}
-            <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm">
+            <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm card-glow">
                 <div className="relative max-w-sm">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar por email, acción o IP..."
-                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20"
                     />
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden card-glow">
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <ShieldCheck className="w-4 h-4 text-viision-600" />
                     <h3 className="text-sm font-bold text-gray-700">Registro de Eventos</h3>
                     <span className="ml-auto text-xs text-gray-400">{filtered.length} eventos</span>
                 </div>

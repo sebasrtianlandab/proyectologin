@@ -1,13 +1,15 @@
-// View: Componente de Login
-import { useState } from 'react';
+// View: Componente de Login – Marca VIISION
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { resetSidebarForNextEntry } from '../layout/sidebarState';
 import { AuthController } from '../../../controllers/AuthController';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
+import { ShinyText } from '../ui/ShinyText';
 import { toast } from 'sonner';
-import { Mail, Lock, LogIn, UserPlus, Sparkles } from 'lucide-react';
+import { Mail, Lock, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function LoginView() {
@@ -15,6 +17,10 @@ export function LoginView() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    resetSidebarForNextEntry();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,61 +53,30 @@ export function LoginView() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-slate-900 to-black p-4 relative overflow-hidden">
-      {/* Efectos de fondo dinámicos */}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black via-[#0f0a1a] to-black p-4 relative overflow-hidden">
+      {/* Efectos de fondo – tonos VIISION (púrpura-azul) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Círculos brillantes animados */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[100px]"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-viision-600/20 rounded-full blur-[100px]"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.6, 0.4],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-viision-500/20 rounded-full blur-[100px]"
+          animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.6, 0.4] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-1/2 right-1/3 w-72 h-72 bg-indigo-500/20 rounded-full blur-[80px]"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, 50, 0],
-            y: [0, -50, 0],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          className="absolute top-1/2 right-1/3 w-72 h-72 bg-viision-400/15 rounded-full blur-[80px]"
+          animate={{ scale: [1, 1.3, 1], x: [0, 50, 0], y: [0, -50, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
-
-        {/* Partículas flotantes */}
-        {[...Array(20)].map((_, i) => (
+        {[...Array(16)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-cyan-400/40 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -100, 0],
-              opacity: [0, 1, 0],
-            }}
+            className="absolute w-1 h-1 bg-viision-400/40 rounded-full"
+            style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
+            animate={{ y: [0, -100, 0], opacity: [0, 1, 0] }}
             transition={{
               duration: 3 + Math.random() * 4,
               repeat: Infinity,
@@ -112,38 +87,35 @@ export function LoginView() {
         ))}
       </div>
 
+      {/* Marca: logo + VIISION con ShinyText */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center gap-3 mb-8 relative z-10"
+      >
+        <img
+          src="/logo/viision-logo.png"
+          alt="VIISION"
+          className="w-16 h-16 object-contain drop-shadow-lg"
+        />
+        <ShinyText
+          text="VIISION"
+          speed={5}
+          className="text-4xl md:text-5xl font-bold uppercase tracking-wide"
+        />
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="w-full bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-2xl shadow-cyan-500/10">
+        <Card className="w-full bg-card/90 backdrop-blur-xl card-glow">
           <CardHeader className="space-y-1">
-            <motion.div
-              className="flex items-center justify-center mb-4"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            >
-              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-3 rounded-full relative">
-                <LogIn className="w-8 h-8 text-white" />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full blur-xl opacity-50"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.5, 0.8, 0.5],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              </div>
-            </motion.div>
-            <CardTitle className="text-2xl text-center text-white">Iniciar sesión</CardTitle>
-            <CardDescription className="text-center text-cyan-200/70">
+            <CardTitle className="text-2xl text-center text-foreground">Iniciar sesión</CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
               Ingresa tus credenciales para acceder
             </CardDescription>
           </CardHeader>
@@ -155,16 +127,16 @@ export function LoginView() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <Label htmlFor="email" className="text-cyan-100">Email</Label>
+                <Label htmlFor="email" className="text-foreground">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-cyan-400/70 group-focus-within:text-cyan-400 transition-colors" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-viision-400/80 group-focus-within:text-viision-400 transition-colors" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9 bg-slate-800/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 transition-all"
+                    className="input-dark-bg pl-9 border-viision-600/40 text-viision-300 placeholder:text-muted-foreground focus:border-viision-500 focus:ring-viision-500/20 transition-all"
                     required
                   />
                 </div>
@@ -175,22 +147,22 @@ export function LoginView() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <Label htmlFor="password" className="text-cyan-100">Contraseña</Label>
+                <Label htmlFor="password" className="text-foreground">Contraseña</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-cyan-400/70 group-focus-within:text-cyan-400 transition-colors" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-viision-400/80 group-focus-within:text-viision-400 transition-colors" />
                   <Input
                     id="password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9 bg-slate-800/50 border-cyan-500/30 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 transition-all"
+                    className="input-dark-bg pl-9 border-viision-600/40 text-viision-300 placeholder:text-muted-foreground focus:border-viision-500 focus:ring-viision-500/20 transition-all"
                     required
                   />
                 </div>
               </motion.div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pt-2">
+            <CardFooter className="flex flex-col space-y-4 pt-8">
               <motion.div
                 className="w-full"
                 initial={{ opacity: 0, y: 20 }}
@@ -199,19 +171,9 @@ export function LoginView() {
               >
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 relative overflow-hidden group"
+                  className="w-full bg-primary hover:bg-viision-700 text-primary-foreground border-0 shadow-lg shadow-viision-600/30 hover:shadow-viision-600/40 transition-all duration-300 relative overflow-hidden"
                   disabled={isLoading}
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                    initial={{ x: '-100%' }}
-                    animate={{ x: '100%' }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isLoading ? (
                       <>
@@ -224,7 +186,6 @@ export function LoginView() {
                   </span>
                 </Button>
               </motion.div>
-
             </CardFooter>
           </form>
         </Card>

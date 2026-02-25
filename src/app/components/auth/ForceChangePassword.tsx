@@ -65,7 +65,7 @@ export function ForceChangePassword() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md"
             >
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden card-glow">
                     {/* Header */}
                     <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-center">
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">

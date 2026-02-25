@@ -46,9 +46,9 @@ export function InternalManagementView() {
     ).slice(0, 10);
 
     const badgeMap: Record<string, { label: string; color: string }> = {
-        'EMPLOYEE_REGISTERED': { label: 'Alta Empleado', color: 'bg-blue-100 text-blue-700' },
-        'PASSWORD_CHANGED': { label: 'Contraseña Cambiada', color: 'bg-purple-100 text-purple-700' },
-        'USER_REGISTERED': { label: 'Registro Usuario', color: 'bg-indigo-100 text-indigo-700' },
+        'EMPLOYEE_REGISTERED': { label: 'Alta Empleado', color: 'bg-viision-100 text-viision-700' },
+        'PASSWORD_CHANGED': { label: 'Contraseña Cambiada', color: 'bg-viision-100 text-viision-700' },
+        'USER_REGISTERED': { label: 'Registro Usuario', color: 'bg-viision-100 text-viision-700' },
     };
 
     return (
@@ -57,7 +57,7 @@ export function InternalManagementView() {
             <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
                     {['Recursos Humanos'].map((tab) => (
-                        <button key={tab} className="pb-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600">
+                        <button key={tab} className="pb-3 text-sm font-medium border-b-2 border-viision-600 text-viision-600">
                             {tab}
                         </button>
                     ))}
@@ -67,7 +67,7 @@ export function InternalManagementView() {
             {/* KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                    { label: 'Total Personal', value: employees.length, icon: Users, color: 'text-blue-600 bg-blue-50', sub: 'Empleados registrados' },
+                    { label: 'Total Personal', value: employees.length, icon: Users, color: 'text-viision-600 bg-viision-50', sub: 'Empleados registrados' },
                     { label: 'Activos', value: activeEmployees.length, icon: CheckCircle2, color: 'text-green-600 bg-green-50', sub: 'Con acceso al sistema' },
                     { label: 'Inactivos', value: inactiveEmployees.length, icon: XCircle, color: 'text-red-600 bg-red-50', sub: 'Sin acceso activo' },
                     { label: 'Clave Pendiente', value: pendingChange.length, icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', sub: 'Deben cambiar contraseña' },
@@ -77,7 +77,7 @@ export function InternalManagementView() {
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.07 }}
-                        className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm"
+                        className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow"
                     >
                         <div className="flex items-start justify-between mb-3">
                             <div className={`p-2 rounded-lg ${kpi.color}`}>
@@ -95,7 +95,7 @@ export function InternalManagementView() {
             <div className="flex gap-3 mb-6">
                 <button
                     onClick={() => navigate('/crm/rrhh')}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm bg-viision-600 text-white rounded-lg hover:bg-viision-700 transition-colors shadow-sm"
                 >
                     <UserPlus className="w-4 h-4" /> Ir a Recursos Humanos
                     <ArrowUpRight className="w-3 h-3" />
@@ -120,7 +120,7 @@ export function InternalManagementView() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+                    className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden card-glow"
                 >
                     <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -163,16 +163,16 @@ export function InternalManagementView() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.38 }}
-                    className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+                    className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden card-glow"
                 >
                     <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-blue-500" />
+                            <Activity className="w-4 h-4 text-viision-500" />
                             <h3 className="text-sm font-bold text-gray-700">Auditoría de Gestión Interna</h3>
                         </div>
                         <button
                             onClick={() => navigate('/audit')}
-                            className="text-xs text-blue-600 hover:underline"
+                            className="text-xs text-viision-600 hover:underline"
                         >
                             Ver todo
                         </button>

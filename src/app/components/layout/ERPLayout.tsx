@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { AuthController } from '../../../controllers/AuthController';
 import { AuthService } from '../../../models/AuthService';
 import { toast } from 'sonner';
 import {
     LayoutDashboard, Users, ShieldCheck, BarChart3, LogOut,
-    ChevronDown, ChevronRight, Menu, X, Globe, Bell, Settings,
+    ChevronDown, ChevronRight, Menu, X, Bell, Settings,
     ShoppingCart, Terminal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ShinyText } from '../ui/ShinyText';
+import { shouldAnimateSidebar as getShouldAnimateSidebar, markSidebarShown } from './sidebarState';
 
 interface NavItem {
     label: string;
@@ -70,6 +72,10 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
     const session = AuthService.getSession();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [expanded, setExpanded] = useState<string[]>(['/crm']);
+    const shouldAnimateSidebar = getShouldAnimateSidebar();
+    useEffect(() => {
+        if (sidebarOpen) markSidebarShown();
+    }, [sidebarOpen]);
 
     const handleLogout = () => {
         AuthController.logout();
@@ -88,27 +94,31 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
         children.some(c => location.pathname.startsWith(c.path));
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="light min-h-screen bg-background flex">
             {/* Sidebar */}
             <AnimatePresence>
                 {sidebarOpen && (
                     <motion.aside
-                        initial={{ x: -280 }}
+                        initial={shouldAnimateSidebar ? { x: -280 } : { x: 0 }}
                         animate={{ x: 0 }}
                         exit={{ x: -280 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-20 shadow-sm"
+                        className="w-64 bg-[#3a4050] border-r border-viision-600/25 flex flex-col fixed h-full z-20 shadow-lg shadow-viision-900/10"
                     >
-                        {/* Logo */}
-                        <div className="h-16 flex items-center px-5 border-b border-gray-100">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                    <Globe className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-800 leading-none">ERP System</p>
-                                    <p className="text-[10px] text-gray-400">Panel de Administración</p>
-                                </div>
+                        {/* Logo + Marca */}
+                        <div className="h-20 flex items-center gap-3 px-4 border-b border-viision-600/20">
+                            <img
+                                src="/logo/viision-logo.png"
+                                alt="VIISION"
+                                className="w-10 h-10 object-contain shrink-0"
+                            />
+                            <div className="min-w-0">
+                                <ShinyText
+                                    text="VIISION ERP"
+                                    speed={5}
+                                    className="text-sm font-bold uppercase tracking-wide block leading-tight"
+                                />
+                                <p className="text-[10px] text-gray-500 mt-0.5">Panel de gestión</p>
                             </div>
                         </div>
 
@@ -124,7 +134,7 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                                 .filter(group => group.items.length > 0)
                                 .map(group => (
                                     <div key={group.group}>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 mb-2">
                                             {group.group}
                                         </p>
                                         <div className="space-y-0.5">
@@ -139,8 +149,8 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                                                             }
                                                         }}
                                                         className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all ${isActive(item.path || '') || (item.children && isParentActive(item.children))
-                                                            ? 'bg-blue-50 text-blue-700 font-semibold'
-                                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                                                            ? 'bg-viision-600/20 text-viision-400 font-semibold border-l-2 border-viision-500'
+                                                            : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                                             }`}
                                                     >
                                                         <span className="flex items-center gap-2">
@@ -160,8 +170,8 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                                                                     key={child.path}
                                                                     onClick={() => navigate(child.path)}
                                                                     className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-all ${isActive(child.path)
-                                                                        ? 'bg-blue-50 text-blue-700 font-semibold'
-                                                                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                                                        ? 'bg-viision-600/20 text-viision-400 font-semibold'
+                                                                        : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
                                                                         }`}
                                                                 >
                                                                     {child.label}
@@ -177,16 +187,16 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                         </nav>
 
                         {/* User footer */}
-                        <div className="p-3 border-t border-gray-100">
-                            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
-                                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        <div className="p-3 border-t border-viision-600/20">
+                            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5">
+                                <div className="w-8 h-8 bg-viision-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                     {session?.name?.charAt(0).toUpperCase() || 'A'}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-gray-700 truncate">{session?.name}</p>
-                                    <p className="text-[10px] text-gray-400 truncate">{session?.email}</p>
+                                    <p className="text-xs font-semibold text-gray-200 truncate">{session?.name}</p>
+                                    <p className="text-[10px] text-gray-500 truncate">{session?.email}</p>
                                 </div>
-                                <button onClick={handleLogout} title="Cerrar sesión" className="text-gray-400 hover:text-red-500 transition-colors">
+                                <button onClick={handleLogout} title="Cerrar sesión" className="text-gray-400 hover:text-red-400 transition-colors">
                                     <LogOut className="w-4 h-4" />
                                 </button>
                             </div>
@@ -198,26 +208,26 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
             {/* Main */}
             <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
                 {/* Top bar */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
+                <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 sticky top-0 z-10 shadow-sm shadow-viision-600/5">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 hover:bg-accent rounded-lg transition-colors"
                         >
-                            {sidebarOpen ? <X className="w-4 h-4 text-gray-500" /> : <Menu className="w-4 h-4 text-gray-500" />}
+                            {sidebarOpen ? <X className="w-4 h-4 text-muted-foreground" /> : <Menu className="w-4 h-4 text-muted-foreground" />}
                         </button>
                         <div>
-                            <h1 className="text-base font-bold text-gray-800">{title}</h1>
-                            {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+                            <h1 className="text-base font-bold text-foreground">{title}</h1>
+                            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
-                            <Bell className="w-4 h-4 text-gray-500" />
-                            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                        <button className="p-2 hover:bg-accent rounded-lg transition-colors relative">
+                            <Bell className="w-4 h-4 text-muted-foreground" />
+                            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full"></span>
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                            <Settings className="w-4 h-4 text-gray-500" />
+                        <button className="p-2 hover:bg-accent rounded-lg transition-colors">
+                            <Settings className="w-4 h-4 text-muted-foreground" />
                         </button>
                     </div>
                 </header>

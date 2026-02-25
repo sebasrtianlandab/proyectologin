@@ -19,7 +19,7 @@ export function SalesView() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm"
+                        className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm card-glow"
                     >
                         <div className={`w-10 h-10 ${stat.bg} ${stat.color} rounded-xl flex items-center justify-center mb-4`}>
                             <stat.icon className="w-5 h-5" />
@@ -31,7 +31,7 @@ export function SalesView() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 card-glow">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                             <BarChart2 className="w-5 h-5 text-blue-600" /> Rendimiento de Ventas
@@ -43,7 +43,7 @@ export function SalesView() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 card-glow">
                     <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <Package className="w-5 h-5 text-orange-600" /> Pedidos Recientes
                     </h3>

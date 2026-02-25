@@ -1,81 +1,140 @@
-@custom-variant dark (&:is(.dark *));
+/* ============================================
+   VIISION ERP – Design tokens & dark theme
+   Tema oscuro por defecto; paleta de marca.
+   ============================================ */
 
+@custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
+
+/* Paleta VIISION (referencia: página oficial) */
 :root {
-  --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --viision-50: #eeefff;
+  --viision-100: #e0e2ff;
+  --viision-200: #c7cbff;
+  --viision-300: #a5aaff;
+  --viision-400: #8185ff;
+  --viision-500: #6164ff;
+  --viision-600: #3413fc;   /* Color principal de marca */
+  --viision-700: #2c10d9;
+  --viision-800: #230db3;
+  --viision-900: #1c0a8c;
+  --viision-950: #130766;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+/* Tema oscuro por defecto (VIISION) */
+:root {
+  --font-size: 16px;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #141414;
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #3413fc;
+  --primary-foreground: #ffffff;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #1f1f1f;
+  --accent-foreground: #fafafa;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #262626;
+  --input: #262626;
+  --input-background: #0f0f0f;
+  --switch-background: #404040;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --ring: #6164ff;
+  --radius: 0.625rem;
+  /* Charts: tonos VIISION para Recharts */
+  --chart-1: #6164ff;
+  --chart-2: #8185ff;
+  --chart-3: #3413fc;
+  --chart-4: #a5aaff;
+  --chart-5: #c7cbff;
+  /* Sidebar (panel ERP) */
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #3413fc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f1f1f;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #6164ff;
+}
+
+/* Tema claro ERP (dashboard y todo lo que va después del login) */
+.light {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #3413fc;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #0a0a0a;
+  --border: #e8e7f2;
+  --input: #e5e5e5;
+  --input-background: #fafafa;
+  --switch-background: #d4d4d4;
+  --ring: #3413fc;
+  --chart-1: #3413fc;
+  --chart-2: #6164ff;
+  --chart-3: #8185ff;
+  --chart-4: #a5aaff;
+  --chart-5: #c7cbff;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #3413fc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f4fa;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e8e7f2;
+  --sidebar-ring: #3413fc;
+}
+
+/* Compatibilidad: .dark sigue disponible por si algo lo usa */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #141414;
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #3413fc;
+  --primary-foreground: #ffffff;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #1f1f1f;
+  --accent-foreground: #fafafa;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #262626;
+  --input: #262626;
+  --ring: #6164ff;
+  --chart-1: #6164ff;
+  --chart-2: #8185ff;
+  --chart-3: #3413fc;
+  --chart-4: #a5aaff;
+  --chart-5: #c7cbff;
+  --sidebar: #0f0f0f;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #3413fc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f1f1f;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #6164ff;
 }
 
 @theme inline {
@@ -105,6 +164,18 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  /* Paleta VIISION (uso: bg-viision-500, text-viision-400, border-viision-600, etc.) */
+  --color-viision-50: var(--viision-50);
+  --color-viision-100: var(--viision-100);
+  --color-viision-200: var(--viision-200);
+  --color-viision-300: var(--viision-300);
+  --color-viision-400: var(--viision-400);
+  --color-viision-500: var(--viision-500);
+  --color-viision-600: var(--viision-600);
+  --color-viision-700: var(--viision-700);
+  --color-viision-800: var(--viision-800);
+  --color-viision-900: var(--viision-900);
+  --color-viision-950: var(--viision-950);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -135,6 +206,7 @@
 
   html {
     font-size: var(--font-size);
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
   }
 
   h1 {
@@ -178,4 +250,46 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+
+  /* Autocompletado: fondo oscuro y texto en tono viision (no blanco) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--viision-300);
+    -webkit-box-shadow: 0 0 0 1000px #141414 inset;
+    box-shadow: 0 0 0 1000px #141414 inset;
+    transition: background-color 9999s ease-out 0s;
+  }
+
+  /* Inputs del login: fondo oscuro siempre (nunca blanco) */
+  input.input-dark-bg,
+  input.input-dark-bg:focus,
+  input.input-dark-bg:hover {
+    background-color: #0f0f0f !important;
+  }
+  input.input-dark-bg:-webkit-autofill,
+  input.input-dark-bg:-webkit-autofill:hover,
+  input.input-dark-bg:-webkit-autofill:focus,
+  input.input-dark-bg:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #0f0f0f inset !important;
+    box-shadow: 0 0 0 1000px #0f0f0f inset !important;
+  }
+}
+
+/* Efecto sutil tipo StarBorder para cards (borde + glow marca VIISION) */
+.card-glow {
+  border: 1px solid rgba(52, 19, 252, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(52, 19, 252, 0.08),
+    0 4px 14px -2px rgba(52, 19, 252, 0.12),
+    0 8px 24px -4px rgba(52, 19, 252, 0.08);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-glow:hover {
+  border-color: rgba(52, 19, 252, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(52, 19, 252, 0.12),
+    0 6px 20px -2px rgba(52, 19, 252, 0.18),
+    0 12px 32px -4px rgba(52, 19, 252, 0.12);
 }

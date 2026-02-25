@@ -109,7 +109,7 @@ export function DashboardView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Card className="bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-xl shadow-cyan-500/5">
+            <Card className="bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-xl shadow-cyan-500/5 card-glow">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5 text-cyan-400" />
@@ -144,7 +144,7 @@ export function DashboardView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className="bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-xl shadow-cyan-500/5">
+            <Card className="bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-xl shadow-cyan-500/5 card-glow">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-cyan-400" />
@@ -185,7 +185,7 @@ export function DashboardView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className="bg-gradient-to-r from-slate-900/90 to-blue-900/40 backdrop-blur-xl border-blue-500/30 shadow-xl shadow-blue-500/10 h-full">
+            <Card className="bg-gradient-to-r from-slate-900/90 to-blue-900/40 backdrop-blur-xl border-blue-500/30 shadow-xl shadow-blue-500/10 h-full card-glow">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ export function DashboardView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <Card className="bg-gradient-to-r from-slate-900/90 to-indigo-900/40 backdrop-blur-xl border-indigo-500/30 shadow-xl shadow-indigo-500/10 h-full">
+            <Card className="bg-gradient-to-r from-slate-900/90 to-indigo-900/40 backdrop-blur-xl border-indigo-500/30 shadow-xl shadow-indigo-500/10 h-full card-glow">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
@@ -255,7 +255,7 @@ export function DashboardView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="mt-6 bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-xl shadow-cyan-500/5">
+          <Card className="mt-6 bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-xl shadow-cyan-500/5 card-glow">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-cyan-400" />

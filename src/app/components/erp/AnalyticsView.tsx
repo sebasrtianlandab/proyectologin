@@ -16,9 +16,10 @@ export function AnalyticsView() {
         try {
             const res = await fetch(`${API}/analytics/summary?days=${period}`);
             const json = await res.json();
-            setData(json);
+            if (json.success === false) setData(null);
+            else setData(json);
         } catch {
-            // error silencioso
+            setData(null);
         } finally {
             setLoading(false);
         }
@@ -26,28 +27,31 @@ export function AnalyticsView() {
 
     useEffect(() => { load(); }, [period]);
 
+    const kpiColor = 'text-viision-600 bg-viision-50';
     const kpis = [
-        { label: 'Total de Visitas', value: data?.totalVisits ?? 0, icon: Eye, sub: 'Páginas vistas en el período', color: 'text-blue-600 bg-blue-50' },
-        { label: 'Sesiones Únicas', value: data?.uniqueSessions ?? 0, icon: Activity, sub: 'Visitantes por sesión', color: 'text-green-600 bg-green-50' },
-        { label: 'Usuarios Registrados', value: data?.registeredUsers ?? 0, icon: Users, sub: 'Usuarios autenticados activos', color: 'text-indigo-600 bg-indigo-50' },
-        { label: 'Págs. por Sesión', value: data?.pagesPerSession ?? '0', icon: TrendingUp, sub: 'Promedio de navegación', color: 'text-amber-600 bg-amber-50' },
+        { label: 'Total de Visitas', value: data?.totalVisits ?? 0, icon: Eye, sub: 'Páginas vistas en el período', color: kpiColor },
+        { label: 'Sesiones Únicas', value: data?.uniqueSessions ?? 0, icon: Activity, sub: 'Visitantes por sesión', color: kpiColor },
+        { label: 'Usuarios Registrados', value: data?.registeredUsers ?? 0, icon: Users, sub: 'Usuarios autenticados activos', color: kpiColor },
+        { label: 'Págs. por Sesión', value: data?.pagesPerSession ?? '0', icon: TrendingUp, sub: 'Promedio de navegación', color: kpiColor },
     ];
 
-    const chartData = data?.dailyVisits ?? Array.from({ length: parseInt(period) }, (_, i) => {
+    const defaultChartData = Array.from({ length: parseInt(period) || 7 }, (_, i) => {
         const d = new Date();
-        d.setDate(d.getDate() - (parseInt(period) - 1 - i));
+        d.setDate(d.getDate() - ((parseInt(period) || 7) - 1 - i));
         return {
             date: d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }),
             visitas: 0,
             sesiones: 0,
         };
     });
+    const chartData = (data?.dailyVisits?.length ? data.dailyVisits : null) ?? defaultChartData;
 
-    const topPages = data?.topPages ?? [
+    const defaultTopPages = [
         { path: '/dashboard', views: 0 },
         { path: '/login', views: 0 },
         { path: '/crm/rrhh', views: 0 },
     ];
+    const topPages = (data?.topPages?.length ? data.topPages : null) ?? defaultTopPages;
 
     const devices = data?.devices ?? { desktop: 0, mobile: 0, other: 0 };
     const totalDevices = devices.desktop + devices.mobile + devices.other || 1;
@@ -81,7 +85,7 @@ export function AnalyticsView() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.07 }}
-                        className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
+                        className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-glow"
                     >
                         <div className="flex items-start justify-between mb-3">
                             <p className="text-sm font-semibold text-gray-600">{kpi.label}</p>
@@ -100,7 +104,7 @@ export function AnalyticsView() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm mb-6"
+                className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm mb-6 card-glow"
             >
                 <h3 className="text-sm font-bold text-gray-700 mb-4">Tráfico en el Tiempo</h3>
                 <div className="h-64">
@@ -108,12 +112,12 @@ export function AnalyticsView() {
                         <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorVisitas" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#6164ff" stopOpacity={0.2} />
+                                    <stop offset="95%" stopColor="#6164ff" stopOpacity={0} />
                                 </linearGradient>
                                 <linearGradient id="colorSesiones" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#3413fc" stopOpacity={0.15} />
+                                    <stop offset="95%" stopColor="#3413fc" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -122,14 +126,14 @@ export function AnalyticsView() {
                             <Tooltip
                                 contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.07)' }}
                             />
-                            <Area type="monotone" dataKey="visitas" stroke="#3b82f6" strokeWidth={2} fill="url(#colorVisitas)" name="Vistas" />
-                            <Area type="monotone" dataKey="sesiones" stroke="#10b981" strokeWidth={2} fill="url(#colorSesiones)" name="Sesiones" />
+                            <Area type="monotone" dataKey="visitas" stroke="#6164ff" strokeWidth={2} fill="url(#colorVisitas)" name="Vistas" />
+                            <Area type="monotone" dataKey="sesiones" stroke="#3413fc" strokeWidth={2} fill="url(#colorSesiones)" name="Sesiones" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
                 <div className="flex items-center gap-4 mt-2 justify-center">
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="w-3 h-0.5 bg-blue-500 inline-block rounded" /> Vistas</span>
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="w-3 h-0.5 bg-green-500 inline-block rounded" /> Sesiones</span>
+                    <span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="w-3 h-0.5 bg-viision-500 inline-block rounded" /> Vistas</span>
+                    <span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="w-3 h-0.5 bg-viision-600 inline-block rounded" /> Sesiones</span>
                 </div>
             </motion.div>
 
@@ -140,7 +144,7 @@ export function AnalyticsView() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.38 }}
-                    className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
+                    className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-glow"
                 >
                     <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
                         <Globe className="w-4 h-4 text-gray-400" /> Páginas Más Visitadas
@@ -156,7 +160,7 @@ export function AnalyticsView() {
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-1.5">
                                         <div
-                                            className="bg-blue-500 h-1.5 rounded-full transition-all duration-700"
+                                            className="bg-viision-500 h-1.5 rounded-full transition-all duration-700"
                                             style={{ width: `${(page.views / maxViews) * 100}%` }}
                                         />
                                     </div>
@@ -171,15 +175,15 @@ export function AnalyticsView() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.44 }}
-                    className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
+                    className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-glow"
                 >
                     <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
                         <Monitor className="w-4 h-4 text-gray-400" /> Dispositivos
                     </h3>
                     <div className="space-y-4">
                         {[
-                            { label: 'Desktop', count: devices.desktop, icon: Monitor, color: 'bg-blue-500' },
-                            { label: 'Móvil', count: devices.mobile, icon: Smartphone, color: 'bg-green-500' },
+                            { label: 'Desktop', count: devices.desktop, icon: Monitor, color: 'bg-viision-500' },
+                            { label: 'Móvil', count: devices.mobile, icon: Smartphone, color: 'bg-viision-600' },
                             { label: 'Otro', count: devices.other, icon: Globe, color: 'bg-gray-400' },
                         ].map(device => (
                             <div key={device.label} className="flex items-center gap-3">

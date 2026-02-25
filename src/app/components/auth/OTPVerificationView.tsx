@@ -128,7 +128,7 @@ export function OTPVerificationView() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="w-full bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-2xl shadow-cyan-500/10">
+        <Card className="w-full bg-slate-900/80 backdrop-blur-xl border-cyan-500/20 shadow-2xl shadow-cyan-500/10 card-glow">
           <CardHeader className="space-y-1">
             <motion.div
               className="flex items-center justify-center mb-4"

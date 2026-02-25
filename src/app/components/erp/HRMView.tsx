@@ -42,10 +42,10 @@ const typeIcons: Record<string, React.ElementType> = {
 };
 
 const typeColors: Record<string, string> = {
-    'Instructor': 'bg-blue-100 text-blue-700',
-    'Desarrollador': 'bg-purple-100 text-purple-700',
-    'Administrador': 'bg-amber-100 text-amber-700',
-    'Asist. Administrativo': 'bg-green-100 text-green-700',
+    'Instructor': 'bg-viision-100 text-viision-700',
+    'Desarrollador': 'bg-viision-100 text-viision-700',
+    'Administrador': 'bg-viision-100 text-viision-700',
+    'Asist. Administrativo': 'bg-viision-100 text-viision-700',
 };
 
 export function HRMView() {
@@ -142,7 +142,7 @@ export function HRMView() {
             <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
                     {['Personal', 'Desempeño', 'Objetivos', 'Auditoría'].map((tab, i) => (
-                        <button key={tab} className={`pb-3 text-sm font-medium border-b-2 transition-colors ${i === 0 ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <button key={tab} className={`pb-3 text-sm font-medium border-b-2 transition-colors ${i === 0 ? 'border-viision-600 text-viision-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                             {tab}
                         </button>
                     ))}
@@ -161,7 +161,7 @@ export function HRMView() {
                     </button>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 text-sm bg-viision-600 text-white rounded-lg hover:bg-viision-700 transition-colors shadow-sm"
                     >
                         <UserPlus className="w-4 h-4" /> Agregar Empleado
                     </button>
@@ -177,7 +177,7 @@ export function HRMView() {
                     { label: 'Administradores', value: countByType('Administrador'), icon: ShieldCheck, sub: 'Personal administrativo' },
                     { label: 'Asist. Admin.', value: countByType('Asist. Administrativo'), icon: HeadphonesIcon, sub: 'Personal de soporte' },
                 ].map(stat => (
-                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow">
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
@@ -196,7 +196,7 @@ export function HRMView() {
                     <button
                         key={mode}
                         onClick={() => setViewMode(mode as 'gallery' | 'table')}
-                        className={`text-sm font-medium pb-1 border-b-2 transition-colors ${viewMode === mode ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                        className={`text-sm font-medium pb-1 border-b-2 transition-colors ${viewMode === mode ? 'border-viision-600 text-viision-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                     >
                         {mode === 'gallery' ? 'Galería de Fotos' : 'Tabla Detallada'}
                     </button>
@@ -209,7 +209,7 @@ export function HRMView() {
             </div>
 
             {/* Search & Filters */}
-            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm mb-4">
+            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm mb-4 card-glow">
                 <div className="flex flex-wrap gap-3">
                     <div className="relative flex-1 min-w-48">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
@@ -217,13 +217,13 @@ export function HRMView() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Buscar por nombre, email o puesto..."
-                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                         />
                     </div>
                     <select
                         value={filterType}
                         onChange={e => setFilterType(e.target.value)}
-                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-gray-600"
+                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 text-gray-600"
                     >
                         <option value="">Todos los tipos</option>
                         {EMPLOYEE_TYPES.map(t => <option key={t}>{t}</option>)}
@@ -231,7 +231,7 @@ export function HRMView() {
                     <select
                         value={filterStatus}
                         onChange={e => setFilterStatus(e.target.value)}
-                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-gray-600"
+                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 text-gray-600"
                     >
                         <option value="">Todos los estados</option>
                         <option>Activo</option>
@@ -260,10 +260,10 @@ export function HRMView() {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: i * 0.04 }}
-                                className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow text-center"
+                                className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow hover:shadow-md transition-shadow text-center"
                             >
-                                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2 relative">
-                                    <span className="text-xl font-bold text-blue-600">{emp.name.charAt(0)}</span>
+                                <div className="w-14 h-14 bg-viision-100 rounded-full flex items-center justify-center mx-auto mb-2 relative">
+                                    <span className="text-xl font-bold text-viision-600">{emp.name.charAt(0)}</span>
                                     {emp.status === 'Activo' && (
                                         <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></span>
                                     )}
@@ -290,7 +290,7 @@ export function HRMView() {
                     })}
                 </div>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden card-glow">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
@@ -306,8 +306,8 @@ export function HRMView() {
                                     <tr key={emp.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                    <span className="text-xs font-bold text-blue-600">{emp.name.charAt(0)}</span>
+                                                <div className="w-8 h-8 bg-viision-100 rounded-full flex items-center justify-center">
+                                                    <span className="text-xs font-bold text-viision-600">{emp.name.charAt(0)}</span>
                                                 </div>
                                                 <div>
                                                     <p className="font-medium text-gray-800">{emp.name}</p>
@@ -365,7 +365,7 @@ export function HRMView() {
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto card-glow"
                         >
                             <div className="flex items-center justify-between p-6 border-b border-gray-100">
                                 <div>
@@ -392,7 +392,7 @@ export function HRMView() {
                                                     placeholder="Ej. Juan Pérez García"
                                                     value={form.name}
                                                     onChange={e => setForm({ ...form, name: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                                                 />
                                             </div>
                                         </div>
@@ -405,7 +405,7 @@ export function HRMView() {
                                                     placeholder="juan.perez@empresa.com"
                                                     value={form.email}
                                                     onChange={e => setForm({ ...form, email: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                                                 />
                                             </div>
                                         </div>
@@ -417,7 +417,7 @@ export function HRMView() {
                                                     placeholder="+51 999 999 999"
                                                     value={form.phone}
                                                     onChange={e => setForm({ ...form, phone: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                                                 />
                                             </div>
                                         </div>
@@ -495,9 +495,9 @@ export function HRMView() {
                                 </div>
 
                                 {/* Info clave temporal */}
-                                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                                    <p className="text-xs text-blue-600">
+                                <div className="bg-viision-50 border border-viision-100 rounded-lg p-3 flex gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-viision-500 mt-0.5 shrink-0" />
+                                    <p className="text-xs text-viision-600">
                                         Se generará automáticamente una <strong>clave temporal</strong> y se enviará al correo del empleado. En su primer acceso, deberá cambiarla obligatoriamente.
                                     </p>
                                 </div>
@@ -513,7 +513,7 @@ export function HRMView() {
                                     <button
                                         type="submit"
                                         disabled={saving}
-                                        className="flex-1 px-4 py-2.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-60 flex items-center justify-center gap-2"
+                                        className="flex-1 px-4 py-2.5 text-sm bg-viision-600 text-white rounded-lg hover:bg-viision-700 transition-colors font-medium disabled:opacity-60 flex items-center justify-center gap-2"
                                     >
                                         {saving ? (
                                             <><RefreshCw className="w-4 h-4 animate-spin" /> Procesando...</>

@@ -50,57 +50,31 @@ export function MainDashboard() {
         fetch(`${API}/analytics/track`, { method: 'POST' }).catch(() => { });
     }, []);
 
+    const kpiColor = 'bg-viision-50 text-viision-600';
     const kpis = [
-        {
-            label: 'Total de Visitas',
-            value: stats.totalVisits,
-            icon: Eye,
-            color: 'bg-blue-50 text-blue-600',
-            trend: '+12%',
-            sub: 'Páginas vistas en el período',
-        },
-        {
-            label: 'Sesiones Únicas',
-            value: stats.uniqueSessions,
-            icon: Activity,
-            color: 'bg-green-50 text-green-600',
-            trend: '+8%',
-            sub: 'Visitantes por sesión',
-        },
-        {
-            label: 'Usuarios Registrados',
-            value: stats.registeredUsers,
-            icon: Users,
-            color: 'bg-indigo-50 text-indigo-600',
-            trend: '+3',
-            sub: 'Usuarios autenticados activos',
-        },
-        {
-            label: 'Eventos de Seguridad',
-            value: stats.recentAudits.length,
-            icon: ShieldCheck,
-            color: 'bg-amber-50 text-amber-600',
-            trend: 'Hoy',
-            sub: 'Logs de auditoría recientes',
-        },
+        { label: 'Total de Visitas', value: stats.totalVisits, icon: Eye, color: kpiColor, trend: '+12%', sub: 'Páginas vistas en el período' },
+        { label: 'Sesiones Únicas', value: stats.uniqueSessions, icon: Activity, color: kpiColor, trend: '+8%', sub: 'Visitantes por sesión' },
+        { label: 'Usuarios Registrados', value: stats.registeredUsers, icon: Users, color: kpiColor, trend: '+3', sub: 'Usuarios autenticados activos' },
+        { label: 'Eventos de Seguridad', value: stats.recentAudits.length, icon: ShieldCheck, color: kpiColor, trend: 'Hoy', sub: 'Logs de auditoría recientes' },
     ];
 
     const getActionLabel = (action: string) => {
         const map: Record<string, { label: string; color: string }> = {
             'LOGIN_SUCCESS_DIRECT': { label: 'Acceso Directo', color: 'bg-green-100 text-green-700' },
             'LOGIN_FAILED': { label: 'Acceso Fallido', color: 'bg-red-100 text-red-700' },
-            'USER_REGISTERED': { label: 'Registro', color: 'bg-blue-100 text-blue-700' },
-            'OTP_VERIFIED_SUCCESS': { label: 'OTP Verificado', color: 'bg-purple-100 text-purple-700' },
+            'USER_REGISTERED': { label: 'Registro', color: 'bg-viision-100 text-viision-700' },
+            'OTP_VERIFIED_SUCCESS': { label: 'OTP Verificado', color: 'bg-green-100 text-green-700' },
         };
         return map[action] || { label: action, color: 'bg-gray-100 text-gray-700' };
     };
 
+    const quickAccessColor = 'text-viision-600 bg-viision-50';
     const quickAccess = [
-        { label: 'Recursos Humanos', path: '/crm/rrhh', icon: UserPlus, color: 'text-indigo-600 bg-indigo-50', roles: ['admin'] },
-        { label: 'Analítica Web', path: '/analytics', icon: TrendingUp, color: 'text-green-600 bg-green-50', roles: ['admin'] },
-        { label: 'Auditoría', path: '/audit', icon: ShieldCheck, color: 'text-blue-600 bg-blue-50', roles: ['admin'] },
-        { label: 'Ventas', path: '/ventas', icon: Zap, color: 'text-amber-600 bg-amber-50', roles: ['admin', 'user'] },
-        { label: 'DevOps', icon: Zap, path: '/devops', color: 'text-red-600 bg-red-50', roles: ['admin', 'user'] },
+        { label: 'Recursos Humanos', path: '/crm/rrhh', icon: UserPlus, color: quickAccessColor, roles: ['admin'] },
+        { label: 'Analítica Web', path: '/analytics', icon: TrendingUp, color: quickAccessColor, roles: ['admin'] },
+        { label: 'Auditoría', path: '/audit', icon: ShieldCheck, color: quickAccessColor, roles: ['admin'] },
+        { label: 'Ventas', path: '/ventas', icon: Zap, color: quickAccessColor, roles: ['admin', 'user'] },
+        { label: 'DevOps', icon: Zap, path: '/devops', color: quickAccessColor, roles: ['admin', 'user'] },
     ].filter(item => !item.roles || (session?.role && item.roles.includes(session.role)));
 
     return (
@@ -108,7 +82,7 @@ export function MainDashboard() {
             {/* Welcome */}
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
-                    Bienvenido, <span className="text-blue-600">{session?.name}</span> 👋
+                    Bienvenido, <span className="text-viision-600">{session?.name}</span> 👋
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
                     {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -125,7 +99,7 @@ export function MainDashboard() {
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.08 }}
-                            className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow"
+                            className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-glow hover:shadow-md transition-shadow"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className={`p-2 rounded-lg ${kpi.color}`}>
@@ -149,10 +123,10 @@ export function MainDashboard() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.35 }}
-                    className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
-                >
+className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-glow"
+                    >
                     <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-yellow-500" /> Acceso Rápido
+                        <Zap className="w-4 h-4 text-viision-500" /> Acceso Rápido
                     </h3>
                     <div className="space-y-2">
                         {quickAccess.map(item => (
@@ -164,8 +138,8 @@ export function MainDashboard() {
                                 <div className={`p-1.5 rounded-lg ${item.color}`}>
                                     <item.icon className="w-4 h-4" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">{item.label}</span>
-                                <ArrowUpRight className="w-3 h-3 text-gray-300 ml-auto group-hover:text-blue-400 transition-colors" />
+                                <span className="text-sm font-medium text-gray-700 group-hover:text-viision-600 transition-colors">{item.label}</span>
+                                <ArrowUpRight className="w-3 h-3 text-gray-300 ml-auto group-hover:text-viision-500 transition-colors" />
                             </button>
                         ))}
                     </div>
@@ -176,13 +150,13 @@ export function MainDashboard() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.42 }}
-                    className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5 shadow-sm"
+                    className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-glow"
                 >
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
                             <Clock className="w-4 h-4 text-gray-400" /> Actividad Reciente
                         </h3>
-                        <button onClick={() => navigate('/audit')} className="text-xs text-blue-600 hover:underline">Ver todo</button>
+                        <button onClick={() => navigate('/audit')} className="text-xs text-viision-600 hover:underline">Ver todo</button>
                     </div>
                     {loading ? (
                         <p className="text-xs text-gray-400 text-center py-6">Cargando...</p>
