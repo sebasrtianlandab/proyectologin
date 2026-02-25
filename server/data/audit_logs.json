@@ -1,5 +1,14 @@
 [
   {
+    "id": "6bffb5d4-194e-4a10-8bdc-5d848f902f8f",
+    "user_id": null,
+    "email": "admin@erp.com",
+    "action": "LOGIN_SUCCESS_DIRECT",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "timestamp": "2026-02-25T14:05:37.414Z"
+  },
+  {
     "id": "5cc4630a-6e35-4355-b9a6-8854397867a9",
     "user_id": null,
     "email": "admin@erp.com",

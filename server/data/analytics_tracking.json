@@ -187,5 +187,19 @@
     "ip": "::1",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
     "timestamp": "2026-02-25T05:29:57.244Z"
+  },
+  {
+    "id": "66a8d013-4c71-4d6c-850e-62b80907e64b",
+    "path": "http://localhost:5173/",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "timestamp": "2026-02-25T14:05:37.473Z"
+  },
+  {
+    "id": "bdb7b975-f825-4727-925a-9c8691648673",
+    "path": "http://localhost:5173/",
+    "ip": "::1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "timestamp": "2026-02-25T14:06:41.184Z"
   }
 ]

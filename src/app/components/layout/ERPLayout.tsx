@@ -28,24 +28,27 @@ const navGroups: { group: string; items: NavItem[] }[] = [
         ]
     },
     {
-        group: 'MÓDULOS DE USUARIO',
+        group: 'OPERACIONES',
         items: [
             { label: 'Ventas', icon: ShoppingCart, path: '/ventas', roles: ['admin', 'user'] },
             { label: 'DevOps', icon: Terminal, path: '/devops', roles: ['admin', 'user'] },
         ]
     },
     {
-        group: 'COMERCIAL (CRM)',
+        group: 'RECURSOS HUMANOS',
         items: [
             {
-                label: 'CRM', icon: Users, path: '/crm', roles: ['admin'], children: [
-                    { label: 'Recursos Humanos', path: '/crm/rrhh' },
+                label: 'RRHH', icon: Users, path: '/crm/rrhh', roles: ['admin'], children: [
+                    { label: 'Personal', path: '/crm/rrhh' },
+                    { label: 'Desempeño', path: '/crm/rrhh/desempeno' },
+                    { label: 'Objetivos', path: '/crm/rrhh/objetivos' },
+                    { label: 'Auditoría RRHH', path: '/crm/rrhh/auditoria' },
                 ]
             }
         ]
     },
     {
-        group: 'GESTIÓN INTERNA (RRHH & OPS)',
+        group: 'GESTIÓN INTERNA',
         items: [
             { label: 'Gestión Interna', icon: ShieldCheck, path: '/gestion-interna', roles: ['admin'] },
         ]
@@ -71,11 +74,16 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
     const location = useLocation();
     const session = AuthService.getSession();
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [expanded, setExpanded] = useState<string[]>(['/crm']);
+    const [expanded, setExpanded] = useState<string[]>(['/crm/rrhh']);
     const shouldAnimateSidebar = getShouldAnimateSidebar();
     useEffect(() => {
         if (sidebarOpen) markSidebarShown();
     }, [sidebarOpen]);
+    // Abrir el grupo del menú cuando la ruta actual es una vista hija
+    useEffect(() => {
+        const path = location.pathname;
+        if (path.startsWith('/crm/rrhh')) setExpanded(prev => prev.includes('/crm/rrhh') ? prev : [...prev, '/crm/rrhh']);
+    }, [location.pathname]);
 
     const handleLogout = () => {
         AuthController.logout();

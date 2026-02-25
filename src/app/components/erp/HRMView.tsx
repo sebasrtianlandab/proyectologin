@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
+import { HRMTabs } from './HRMTabs';
 import { toast } from 'sonner';
 import {
     UserPlus, Search, X, User, Mail, Phone, Briefcase,
@@ -138,16 +139,7 @@ export function HRMView() {
 
     return (
         <ERPLayout title="Recursos Humanos" subtitle="Gestión de personal y empleados">
-            {/* Tabs */}
-            <div className="border-b border-gray-200 mb-6">
-                <div className="flex gap-6">
-                    {['Personal', 'Desempeño', 'Objetivos', 'Auditoría'].map((tab, i) => (
-                        <button key={tab} className={`pb-3 text-sm font-medium border-b-2 transition-colors ${i === 0 ? 'border-viision-600 text-viision-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            <HRMTabs />
 
             {/* Header row */}
             <div className="flex items-center justify-between mb-6">

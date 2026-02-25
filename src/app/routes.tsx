@@ -7,6 +7,9 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { ForceChangePassword } from './components/auth/ForceChangePassword';
 import { MainDashboard } from './components/erp/MainDashboard';
 import { HRMView } from './components/erp/HRMView';
+import { HRMDesempenoView } from './components/erp/HRMDesempenoView';
+import { HRMObjetivosView } from './components/erp/HRMObjetivosView';
+import { HRMAuditoriaView } from './components/erp/HRMAuditoriaView';
 import { AnalyticsView } from './components/erp/AnalyticsView';
 import { InternalManagementView } from './components/erp/InternalManagementView';
 import { SalesView } from './components/erp/SalesView';
@@ -46,6 +49,30 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['admin']}>
         <HRMView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/crm/rrhh/desempeno',
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <HRMDesempenoView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/crm/rrhh/objetivos',
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <HRMObjetivosView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/crm/rrhh/auditoria',
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <HRMAuditoriaView />
       </ProtectedRoute>
     ),
   },
