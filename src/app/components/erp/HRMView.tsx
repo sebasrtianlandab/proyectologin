@@ -384,7 +384,7 @@ export function HRMView() {
                                                     placeholder="Ej. Juan Pérez García"
                                                     value={form.name}
                                                     onChange={e => setForm({ ...form, name: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                                                 />
                                             </div>
                                         </div>
@@ -397,7 +397,7 @@ export function HRMView() {
                                                     placeholder="juan.perez@empresa.com"
                                                     value={form.email}
                                                     onChange={e => setForm({ ...form, email: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                                                 />
                                             </div>
                                         </div>
@@ -409,7 +409,7 @@ export function HRMView() {
                                                     placeholder="+51 999 999 999"
                                                     value={form.phone}
                                                     onChange={e => setForm({ ...form, phone: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
                                                 />
                                             </div>
                                         </div>
@@ -430,7 +430,7 @@ export function HRMView() {
                                                     required
                                                     value={form.employeeType}
                                                     onChange={e => setForm({ ...form, employeeType: e.target.value, position: '' })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
                                                 >
                                                     {EMPLOYEE_TYPES.map(t => <option key={t}>{t}</option>)}
                                                 </select>
@@ -443,7 +443,7 @@ export function HRMView() {
                                                 <select
                                                     value={form.department}
                                                     onChange={e => setForm({ ...form, department: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
                                                 >
                                                     {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
                                                 </select>
@@ -454,7 +454,7 @@ export function HRMView() {
                                             <select
                                                 value={form.position}
                                                 onChange={e => setForm({ ...form, position: e.target.value })}
-                                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
+                                                className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
                                             >
                                                 <option value="">Seleccionar puesto</option>
                                                 {(POSITIONS[form.employeeType] || []).map(p => <option key={p}>{p}</option>)}
@@ -468,7 +468,7 @@ export function HRMView() {
                                                     type="date"
                                                     value={form.hireDate}
                                                     onChange={e => setForm({ ...form, hireDate: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
+                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none"
                                                 />
                                             </div>
                                         </div>
@@ -477,7 +477,7 @@ export function HRMView() {
                                             <select
                                                 value={form.status}
                                                 onChange={e => setForm({ ...form, status: e.target.value })}
-                                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
+                                                className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
                                             >
                                                 <option>Activo</option>
                                                 <option>Inactivo</option>

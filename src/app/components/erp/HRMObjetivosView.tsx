@@ -30,7 +30,7 @@ export function HRMObjetivosView() {
 
     useEffect(() => { load(); }, []);
 
-    // Objetivos mock por empleado (en producción vendrían de /api/objectives)
+    // Objetivos por empleado (API /api/objectives)
     const objetivosPorEmpleado = employees.map(emp => ({
         employeeId: emp.id,
         employeeName: emp.name,

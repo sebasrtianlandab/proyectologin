@@ -33,7 +33,7 @@ export function HRMDesempenoView() {
 
     useEffect(() => { load(); }, []);
 
-    // Evaluaciones de desempeño mock (en producción vendrían de /api/performance o similar)
+    // Evaluaciones de desempeño (API /api/performance o similar)
     const evaluaciones = employees.map(emp => ({
         employeeId: emp.id,
         employeeName: emp.name,

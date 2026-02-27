@@ -3,14 +3,10 @@ import cors from 'cors';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
-import * as mockStore from './mockStore.js';
 
 dotenv.config();
 
-const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
-
-// Inicializar Supabase solo si no usamos mock (service_role en backend para bypass RLS)
-const supabase = !USE_MOCK_DATA && process.env.SUPABASE_URL
+const supabase = process.env.SUPABASE_URL
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)
   : null;
 
@@ -23,17 +19,11 @@ app.use(express.json());
 
 // Helper: Registrar evento de auditoría
 async function logAudit(action, userId, email, req) {
+  if (!supabase) return;
   try {
     const ip = req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress;
     const user_agent = req.headers['user-agent'];
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-
-    if (USE_MOCK_DATA) {
-      console.log(`📝 [Mock] Auditoría: ${action} para ${email}`);
-      await mockStore.insertAudit({ user_id: isUUID ? userId : null, email: email || 'N/A', action, ip, user_agent });
-      return;
-    }
-    console.log(`📝 Registrando auditoría en Supabase: ${action} para ${email}`);
     const { error } = await supabase.from('audit_logs').insert([{
       user_id: isUUID ? userId : null,
       email: email || 'N/A',
@@ -61,30 +51,11 @@ const transporter = nodemailer.createTransport({
 // POST /api/register - Registro de usuario
 app.post('/api/register', async (req, res) => {
   try {
+    if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Todos los campos son requeridos' });
-    }
-
-    if (USE_MOCK_DATA) {
-      const { data: existingUser } = await mockStore.getExistingUserByEmail(email);
-      if (existingUser) return res.status(400).json({ success: false, message: 'El email ya está registrado' });
-      const { data: newUser, error: createError } = await mockStore.createUser({ name, email, password, role: 'user', verified: false });
-      if (createError) throw createError;
-      await logAudit('USER_REGISTERED', newUser.id, email, req);
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-      await mockStore.insertOtp({ user_id: newUser.id, code: otpCode, expires_at: expiresAt });
-      if (process.env.GMAIL_USER) {
-        await transporter.sendMail({
-          from: process.env.GMAIL_USER,
-          to: email,
-          subject: 'Código de Verificación OTP',
-          html: `<h2>¡Bienvenido!</h2><p>Tu código es: <b style="font-size: 24px;">${otpCode}</b></p>`,
-        });
-      }
-      return res.json({ success: true, message: 'Usuario registrado. Verifica tu email.', userId: newUser.id });
     }
 
     const { data: existingUser } = await supabase.from('users').select('id').eq('email', email).single();
@@ -112,24 +83,13 @@ app.post('/api/register', async (req, res) => {
 // POST /api/login
 app.post('/api/login', async (req, res) => {
   try {
+    if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const { email, password } = req.body;
-    let user;
-
-    if (USE_MOCK_DATA) {
-      const { data: u, error } = await mockStore.getUserByEmail(email);
-      if (error || !u) {
-        await logAudit('LOGIN_FAILED', null, email, req);
-        return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
-      }
-      user = u;
-    } else {
-      const { data: u, error } = await supabase.from('users').select('*').eq('email', email).single();
-      if (error) {
-        console.error('🔴 Supabase login error:', error.message, error.code);
-        await logAudit('LOGIN_FAILED', null, email, req);
-        return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
-      }
-      user = u;
+    const { data: user, error } = await supabase.from('users').select('*').eq('email', email).single();
+    if (error) {
+      console.error('🔴 Supabase login error:', error.message, error.code);
+      await logAudit('LOGIN_FAILED', null, email, req);
+      return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
     }
 
     if (!user || user.password !== password) {
@@ -151,29 +111,8 @@ app.post('/api/login', async (req, res) => {
 // POST /api/verify-otp
 app.post('/api/verify-otp', async (req, res) => {
   try {
+    if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const { email, code } = req.body;
-
-    if (USE_MOCK_DATA) {
-      const { data: user, error: userError } = await mockStore.getUserByEmail(email);
-      if (userError || !user) return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
-      const { data: otpData, error: otpError } = await mockStore.getLatestOtpByUserId(user.id);
-      if (otpError || !otpData) return res.status(400).json({ success: false, message: 'OTP no solicitado' });
-      if (new Date() > new Date(otpData.expires_at)) {
-        await mockStore.deleteOtpById(otpData.id);
-        return res.status(400).json({ success: false, message: 'Código expirado' });
-      }
-      const newAttempts = (otpData.attempts || 0) + 1;
-      await mockStore.updateOtpAttempts(otpData.id, newAttempts);
-      if (code !== otpData.code) {
-        if (newAttempts >= otpData.max_attempts) await mockStore.deleteOtpById(otpData.id);
-        return res.status(400).json({ success: false, message: `Código incorrecto. Intentos: ${newAttempts}/${otpData.max_attempts}` });
-      }
-      await mockStore.updateUserById(user.id, { verified: true });
-      await mockStore.deleteOtpsByUserId(user.id);
-      await logAudit('OTP_VERIFIED_SUCCESS', user.id, email, req);
-      return res.json({ success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
-    }
-
     const { data: user, error: userError } = await supabase.from('users').select('id, name, email, role').eq('email', email).single();
     if (userError || !user) return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
     const { data: otpData, error: otpError } = await supabase.from('otp_codes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).single();
@@ -200,40 +139,16 @@ app.post('/api/verify-otp', async (req, res) => {
 // ==================== EMPLEADOS ====================
 
 app.get('/api/employees', async (req, res) => {
-  if (USE_MOCK_DATA) {
-    const { data, error } = await mockStore.getEmployees();
-    return res.json({ success: !error, employees: data || [] });
-  }
+  if (!supabase) return res.status(503).json({ success: false, employees: [] });
   const { data, error } = await supabase.from('employees').select('*').order('created_at', { ascending: false });
   res.json({ success: !error, employees: data || [] });
 });
 
 app.post('/api/employees', async (req, res) => {
   try {
+    if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const { name, email, phone, employeeType, department, position, hireDate, status } = req.body;
     const tempPassword = `Temp${Math.floor(1000 + Math.random() * 9000)}!`;
-
-    if (USE_MOCK_DATA) {
-      const { data: newUser, error: userError } = await mockStore.createUser({
-        name, email, password: tempPassword, role: 'user', verified: true, must_change_password: true
-      });
-      if (userError) return res.status(400).json({ success: false, message: 'Error al crear credenciales' });
-      await mockStore.createEmployee({
-        user_id: newUser.id, name, email, phone,
-        employee_type: employeeType, department, position, hire_date: hireDate, status
-      });
-      await logAudit('EMPLOYEE_REGISTERED', newUser.id, email, req);
-      if (process.env.GMAIL_USER) {
-        await transporter.sendMail({
-          from: process.env.GMAIL_USER,
-          to: email,
-          subject: '🎉 Bienvenido al Sistema',
-          html: `<h3>Hola ${name}</h3><p>Tu clave temporal es: <code>${tempPassword}</code></p>`
-        });
-      }
-      return res.json({ success: true, message: 'Empleado creado' });
-    }
-
     const { data: newUser, error: userError } = await supabase.from('users').insert([{
       name, email, password: tempPassword, role: 'user', verified: true, must_change_password: true
     }]).select().single();
@@ -256,11 +171,8 @@ app.post('/api/employees', async (req, res) => {
 });
 
 app.delete('/api/employees/:id', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
   const { id } = req.params;
-  if (USE_MOCK_DATA) {
-    const { error } = await mockStore.deleteEmployeeById(id);
-    return res.json({ success: !error });
-  }
   const { error } = await supabase.from('employees').delete().eq('id', id);
   res.json({ success: !error });
 });
@@ -268,29 +180,20 @@ app.delete('/api/employees/:id', async (req, res) => {
 // ==================== OTROS ====================
 
 app.get('/api/audit', async (req, res) => {
-  if (USE_MOCK_DATA) {
-    const { data, error } = await mockStore.getAuditLogs(100);
-    return res.json({ success: !error, audits: data || [] });
-  }
+  if (!supabase) return res.status(503).json({ success: false, audits: [] });
   const { data, error } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }).limit(100);
   res.json({ success: !error, audits: data || [] });
 });
 
 app.get('/api/users/count', async (req, res) => {
-  if (USE_MOCK_DATA) {
-    const { count, error } = await mockStore.getUsersCount();
-    return res.json({ success: !error, count: count || 0 });
-  }
+  if (!supabase) return res.status(503).json({ success: false, count: 0 });
   const { count, error } = await supabase.from('users').select('*', { count: 'exact', head: true });
   res.json({ success: !error, count: count || 0 });
 });
 
 app.post('/api/change-password', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
   const { email, newPassword } = req.body;
-  if (USE_MOCK_DATA) {
-    const { error } = await mockStore.updateUserByEmail(email, { password: newPassword, must_change_password: false });
-    return res.json({ success: !error });
-  }
   const { error } = await supabase.from('users').update({
     password: newPassword,
     must_change_password: false
@@ -358,18 +261,7 @@ app.get('/api/analytics/summary', async (req, res) => {
     const days = req.query.days || '7';
     let totalVisits = 0, registeredUsers = 0, dailyVisits = [], topPages = [], devices = { desktop: 100, mobile: 0, other: 0 };
 
-    if (USE_MOCK_DATA) {
-      const a = await mockStore.getAnalyticsCount();
-      const u = await mockStore.getUsersCount();
-      totalVisits = a.count || 0;
-      registeredUsers = u.count || 0;
-      const { data: rows } = await mockStore.getAnalyticsTracking();
-      const built = buildAnalyticsSummary(rows || [], days);
-      dailyVisits = built.dailyVisits;
-      topPages = built.topPages;
-      const total = dailyVisits.reduce((s, d) => s + d.visitas, 0) || 1;
-      devices = { desktop: Math.round((total * 0.9) / total * 100), mobile: Math.round((total * 0.1) / total * 100), other: 0 };
-    } else if (supabase) {
+    if (supabase) {
       const { data: rows } = await supabase.from('analytics_tracking').select('path, timestamp, ip');
       totalVisits = (rows && rows.length) || 0;
       const { count: ru } = await supabase.from('users').select('*', { count: 'exact', head: true });
@@ -400,16 +292,19 @@ app.post('/api/analytics/track', async (req, res) => {
     ip: req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress,
     user_agent: req.headers['user-agent']
   };
-  if (USE_MOCK_DATA) {
-    await mockStore.insertAnalyticsTracking(payload);
-  } else {
-    await supabase.from('analytics_tracking').insert([payload]);
-  }
+  if (supabase) await supabase.from('analytics_tracking').insert([payload]);
   res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-  console.log(USE_MOCK_DATA
-    ? `🚀 Servidor en modo MOCK (JSON) en http://localhost:${PORT}`
-    : `🚀 Servidor Supabase corriendo en http://localhost:${PORT}`);
+app.listen(PORT, async () => {
+  console.log(`🚀 Servidor en http://localhost:${PORT}`);
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('users').select('id').limit(1);
+      if (error) throw error;
+      console.log('✅ Supabase conectado correctamente (tabla users accesible)');
+    } catch (err) {
+      console.error('❌ Error conectando a Supabase:', err.message);
+    }
+  }
 });

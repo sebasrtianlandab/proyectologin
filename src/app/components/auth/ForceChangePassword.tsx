@@ -97,7 +97,7 @@ export function ForceChangePassword() {
                                     placeholder="••••••••"
                                     value={newPassword}
                                     onChange={e => setNewPassword(e.target.value)}
-                                    className="w-full pl-9 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                                    className="w-full pl-9 pr-10 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                                 />
                                 <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
                                     {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -152,7 +152,7 @@ export function ForceChangePassword() {
                                     placeholder="••••••••"
                                     value={confirmPassword}
                                     onChange={e => setConfirmPassword(e.target.value)}
-                                    className="w-full pl-9 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                                    className="w-full pl-9 pr-10 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                                 />
                                 <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
                                     {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -165,7 +165,7 @@ export function ForceChangePassword() {
                             {checks.map(check => (
                                 <div key={check.label} className="flex items-center gap-2">
                                     <CheckCircle2 className={`w-4 h-4 transition-colors ${check.ok ? 'text-green-500' : 'text-gray-300'}`} />
-                                    <span className={`text-xs transition-colors ${check.ok ? 'text-green-700 font-medium' : 'text-gray-400'}`}>
+                                    <span className={`text-xs transition-colors ${check.ok ? 'text-green-700 font-medium' : 'text-gray-700'}`}>
                                         {check.label}
                                     </span>
                                 </div>
