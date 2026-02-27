@@ -1,6 +1,6 @@
-# 📚 Fases de Desarrollo - Sistema de Autenticación OTP
+# 📚 Fases de Desarrollo — VIISION ERP
 
-Este documento detalla el proceso completo de desarrollo del sistema, desde los requerimientos iniciales hasta el producto final.
+Este documento detalla el proceso completo de desarrollo del sistema, desde los requerimientos iniciales hasta el producto final (ERP empresarial con Supabase).
 
 ---
 
@@ -11,7 +11,7 @@ Entender los requerimientos del proyecto y el código existente.
 
 ### Actividades Realizadas
 1. **Revisión del código fuente** inicial del proyecto React
-2. **Análisis de requerimientos** especificados por el usuario
+2. **Análisis de requerimientos** especificados (sistema MVC con OTP y auditoría)
 3. **Identificación de gaps** entre implementación actual y requerimientos
 
 ### Resultados
@@ -36,7 +36,7 @@ Diseñar una arquitectura que cumpla con todos los requerimientos sin romper el 
 #### Backend
 - **Stack elegido**: Node.js + Express
 - **Razón**: Rápido de implementar, compatible con el ecosistema JavaScript
-- **Persistencia**: Archivos JSON (simula BD, fácil de migrar)
+- **Persistencia inicial**: Archivos JSON (simula BD, fácil de migrar)
 - **Email**: Nodemailer + Gmail SMTP
 
 #### Frontend
@@ -44,16 +44,12 @@ Diseñar una arquitectura que cumpla con todos los requerimientos sin romper el 
 - **Actualizar**: Modelos y controladores para comunicarse con backend
 - **Agregar**: Campo "Nombre" en registro
 
-#### Flujo de Datos
+#### Flujo de Datos (v1)
 ```
 Usuario → React Frontend → Express API → JSON Files
                                 ↓
                         Gmail SMTP (OTP)
 ```
-
-### Documentos Creados
-- `implementation_plan.md` - Plan detallado de implementación
-- `task.md` - Checklist de tareas
 
 ### Duración
 20 minutos
@@ -78,49 +74,23 @@ Crear un servidor backend funcional con todas las rutas API necesarias.
 #### 3.2 Desarrollo del Servidor (`server/server.js`)
 Implementación de rutas API:
 
-1. **POST /api/register**
-   - Valida datos de entrada (nombre, email, password)
-   - Verifica email duplicado
-   - Crea usuario en `data/users.json`
-   - Genera código OTP de 6 dígitos
-   - Almacena OTP en `data/otp.json` con expiración (10 min)
-   - Envía email vía Gmail SMTP
-
-2. **POST /api/login**
-   - Valida credenciales (email + password)
-   - Genera código OTP siempre (2FA obligatorio)
-   - Envía email con código
-   - Retorna `requiresOTP: true`
-
-3. **POST /api/verify-otp**
-   - Valida código ingresado
-   - Control de intentos (máx. 3)
-   - Verifica expiración
-   - Marca usuario como verificado
-   - Limpia OTP de archivo
-
-4. **GET /api/user/:email**
-   - Obtiene datos del usuario
-   - Excluye password de respuesta
+1. **POST /api/register** — valida datos, crea usuario en JSON, genera OTP, envía email
+2. **POST /api/login** — valida credenciales, genera OTP (2FA obligatorio)
+3. **POST /api/verify-otp** — valida código, controla intentos (3) y expiración (10 min)
+4. **GET /api/user/:email** — obtiene datos de usuario (sin contraseña)
 
 #### 3.3 Configuración de Gmail
-- Creación de archivo `.env` con credenciales
-- Configuración de Nodemailer con Gmail SMTP
-- Correo emisor: `rlandabazan@gmail.com`
-- Generación de App Password de Google
+- Archivo `.env` con credenciales
+- Nodemailer con Gmail SMTP
+- App Password de Google
 
 #### 3.4 Persistencia de Datos
-Creación de estructura JSON:
-- `data/users.json` - BD de usuarios
-- `data/otp.json` - Códigos temporales
-- `data/audit.json` - Auditoría (vacío)
+- `data/users.json` — usuarios
+- `data/otp.json` — códigos temporales
+- `data/audit.json` — auditoría
 
 ### Archivos Creados
-- `server/server.js` - Servidor principal
-- `server/package.json` - Dependencias
-- `server/.env` - Variables de entorno
-- `.env.example` - Plantilla de configuración
-- `data/users.json`, `data/otp.json`, `data/audit.json`
+`server/server.js`, `server/package.json`, `server/.env`, `data/users.json`, `data/otp.json`, `data/audit.json`
 
 ### Duración
 1 hora 30 minutos
@@ -135,54 +105,20 @@ Conectar el frontend React existente con el nuevo backend sin romper el diseño.
 ### Actividades
 
 #### 4.1 Actualización de Modelos (`/src/models/`)
+- `User.ts` — campo `name` agregado
+- `AuthService.ts` — refactorizado de localStorage a llamadas API `async/await`
 
-**User.ts**
-- Agregado campo `name` a interfaz `User`
+#### 4.2 Actualización de Controladores
+- `AuthController.ts` — métodos convertidos a async, parámetro `name` en registro
 
-**AuthService.ts**
-- Refactorización completa de local a API
-- Métodos transformados a async/await:
-  - `register(name, email, password)` → `POST /api/register`
-  - `login(email, password)` → `POST /api/login`
-  - `verifyOTP(code)` → `POST /api/verify-otp`
-  - `getSession()` → Lee de localStorage
-  - `isAuthenticated()` → Verifica sesión local
-- Manejo de `pendingEmail` para OTP flow
-
-#### 4.2 Actualización de Controladores (`/src/controllers/`)
-
-**AuthController.ts**
-- Adaptación de métodos para usar `async/await`
-- `register()` ahora acepta parámetro `name`
-- `login()` siempre redirige a OTP
-- `verifyOTP()` usa email de `pendingEmail`
-
-#### 4.3 Actualización de Vistas (`/src/app/components/auth/`)
-
-**RegisterView.tsx**
-- Agregado input "Nombre" al formulario
-- Actualizada llamada a `AuthController.register(name, email, password)`
-- Cambio a async en handler
-
-**LoginView.tsx**
-- Actualizada llamada async a `AuthController.login()`
-- Mensaje actualizado: "Revisa tu correo electrónico"
-
-**OTPVerificationView.tsx**
-- Actualizada llamada async a `AuthController.verifyOTP()`
-
-**DashboardView.tsx**
-- Eliminadas referencias a `AuthService.getUsers()`
-- Usa datos de sesión directamente (`session.name`, `session.email`)
+#### 4.3 Actualización de Vistas
+- `RegisterView.tsx` — input de nombre agregado
+- `LoginView.tsx` — flujo async actualizado
+- `OTPVerificationView.tsx` — llamada async a verify
+- `DashboardView.tsx` — usa datos de sesión (localStorage)
 
 ### Archivos Modificados
-- `src/models/User.ts`
-- `src/models/AuthService.ts`
-- `src/controllers/AuthController.ts`
-- `src/app/components/auth/RegisterView.tsx`
-- `src/app/components/auth/LoginView.tsx`
-- `src/app/components/auth/OTPVerificationView.tsx`
-- `src/app/components/auth/DashboardView.tsx`
+`src/models/User.ts`, `src/models/AuthService.ts`, `src/controllers/AuthController.ts`, componentes auth
 
 ### Duración
 1 hora
@@ -196,23 +132,15 @@ Asegurar que el login siempre requiera OTP, no solo en el registro.
 
 ### Cambios Realizados
 
-**Backend (`server/server.js`)**
-- Eliminada condición `if (!user.verified)`
-- Login **siempre** genera y envía OTP
-- Asunto de email cambiado a: "Código de Verificación OTP - Login"
+**Backend**
+- Eliminada condición `if (!user.verified)` — login **siempre** genera OTP
+- Asunto de email: "Código de Verificación OTP - Login"
 
 **Frontend**
 - Ya estaba preparado para manejar `requiresOTP: true`
-- No requirió cambios adicionales
 
 ### Resultado
-Sistema con autenticación de dos factores completa:
-1. Usuario ingresa credenciales
-2. Sistema valida contraseña
-3. Sistema genera OTP
-4. Email enviado automáticamente
-5. Usuario verifica OTP
-6. Acceso concedido
+Autenticación de dos factores completa: credenciales → OTP → acceso.
 
 ### Duración
 20 minutos
@@ -222,170 +150,252 @@ Sistema con autenticación de dos factores completa:
 ## ✨ Fase 6: Limpieza de Interfaz
 
 ### Objetivo
-Eliminar todos los mensajes de desarrollo y dejar una interfaz 100% profesional.
+Eliminar mensajes de desarrollo y dejar una interfaz 100% profesional.
 
 ### Elementos Eliminados
-
-**OTPVerificationView.tsx**
-```diff
-- <div className="bg-blue-900/20 ...">
--   <p>💡 Modo desarrollo: El código OTP se muestra en la consola</p>
-- </div>
-```
-
-**DashboardView.tsx**
-```diff
-- <div className="bg-blue-900/20 ...">
--   <h4>Arquitectura MVC</h4>
--   <ul>Modelo, Vista, Controlador</ul>
-- </div>
--
-- <div className="bg-green-900/20 ...">
--   <h4>✅ Backend Integrado</h4>
--   <p>Node.js + Express con persistencia JSON</p>
-- </div>
-```
+- Banners "Modo desarrollo" en `OTPVerificationView.tsx`
+- Sección "Arquitectura MVC" educativa en `DashboardView.tsx`
+- Sección "Backend Integrado" en `DashboardView.tsx`
 
 ### Resultado
-- ✅ Interfaz completamente profesional
-- ✅ Sin referencias técnicas innecesarias
-- ✅ Experiencia de usuario limpia
+✅ Interfaz completamente profesional, sin referencias técnicas innecesarias.
 
 ### Duración
 15 minutos
 
 ---
 
-## � Fase 7: Módulo de Auditoría Integral
+## 🛡️ Fase 7: Módulo de Auditoría Integral
 
 ### Objetivo
-Implementar un sistema de rastreo de seguridad que registre cada acción crítica en el servidor y permita su visualización administrativa.
+Implementar rastreo de seguridad que registre cada acción crítica en el servidor.
 
 ### Actividades
 
-#### 7.1 Backend (Logging Automático)
-- Creación de función helper `logAudit` en `server.js`.
-- Registro automático de:
-    - `USER_REGISTERED`: Al crear cuenta.
-    - `LOGIN_FAILED`: Intentos fallidos de contraseña.
-    - `LOGIN_ATTEMPT_SUCCESS_WAITING_OTP`: Login correcto esperando 2FA.
-    - `OTP_VERIFIED_SUCCESS`: Acceso concediddo final.
-- Captura de metadatos: IP del cliente, Timestamp y User-Agent.
+#### 7.1 Backend — Logging Automático
+- Función helper `logAudit` en `server.js`
+- Eventos registrados:
+  - `USER_REGISTERED` — nueva cuenta creada
+  - `LOGIN_FAILED` — credenciales incorrectas
+  - `LOGIN_ATTEMPT_SUCCESS_WAITING_OTP` — login correcto, esperando 2FA
+  - `OTP_VERIFIED_SUCCESS` — acceso concedido
+- Metadatos capturados: IP del cliente, timestamp, User-Agent
 
 #### 7.2 API de Auditoría
-- Nuevo endpoint `GET /api/audit`.
-- Lógica de retorno: Últimos 50 registros en orden cronológico inverso.
+- Endpoint `GET /api/audit` — últimos 50 registros en orden cronológico inverso
 
-#### 7.3 Frontend (Visualización)
-- Creación de `AuditView.tsx`.
-- Implementación de **Dashboard de Seguridad**:
-    - Estadísticas dinámicas (Eventos totales, Alertas críticas, IPs únicas).
-    - Tabla interactiva con badges de estado.
-    - Sistema de actualización en tiempo real ("Live Logs").
+#### 7.3 Frontend — Visualización
+- Creación de `AuditView.tsx`
+- Dashboard de Seguridad:
+  - Estadísticas dinámicas (eventos totales, alertas críticas, IPs únicas)
+  - Tabla interactiva con badges de estado
+  - Actualización en tiempo real ("Live Logs")
 
 ### Archivos Creados/Modificados
-- `server/server.js` (Funciones de log y rutas API)
-- `src/app/components/auth/AuditView.tsx` (Nueva vista)
-- `src/app/routes.tsx` (Ruta `/audit` protegida)
-- `data/audit.json` (Archivo de persistencia)
+`server/server.js`, `src/app/components/auth/AuditView.tsx`, `src/app/routes.tsx`
 
 ### Duración
 1 hora
 
 ---
 
-## �📚 Fase 8: Documentación y Organización
+## 📚 Fase 8: Documentación y Organización
 
 ### Objetivo
 Documentar el proyecto completo y organizar archivos.
 
 ### Actividades
 
-#### 7.1 Creación de Carpeta `docs/`
+#### 8.1 Creación de carpeta `docs/`
 Centralización de toda la documentación.
 
-#### 7.2 Documentos Creados
-1. **ESTRUCTURA.md** - Árbol de directorios y descripción de componentes
-2. **FASES_DESARROLLO.md** - Este documento
-3. **INSTRUCCIONES.md** - Guía de instalación y ejecución
-4. **REQUERIMIENTOS.md** - Requerimientos originales
+#### 8.2 Documentos Creados
+1. `ESTRUCTURA.md` — árbol de directorios
+2. `FASES_DESARROLLO.md` — este documento
+3. `INSTRUCCIONES.md` — guía de instalación
+4. `REQUERIMIENTOS.md` — requerimientos originales
+5. `RESUMEN.md` — resumen ejecutivo
+6. `LIMPIEZA.md` — historial de organización
 
-#### 7.3 Scripts de Utilidad
-- `reset-db.sh` - Script Bash para limpiar BD
-- `reset-db.ps1` - Script PowerShell para limpiar BD
-
-#### 7.4 Configuración Git
-- `.gitignore` actualizado
-- Exclusión de `node_modules/`, `.env`, archivos temporales
-
-### Archivos Creados/Movidos
--  `docs/ESTRUCTURA.md`
-- `docs/FASES_DESARROLLO.md`
-- `docs/INSTRUCCIONES.md` (movido desde raíz)
-- `docs/REQUERIMIENTOS.md` (movido desde `requerimientosporyecto.md`)
+#### 8.3 Scripts de Utilidad
+- `reset-db.sh` — limpieza JSON (Bash)
+- `reset-db.ps1` — limpieza JSON (PowerShell)
 
 ### Duración
 45 minutos
 
 ---
 
+## 🚀 Fase 9: Migración a Supabase + ERP Completo
+
+### Objetivo
+Migrar la persistencia de JSON a Supabase (PostgreSQL real) y expandir el sistema a un ERP empresarial completo bajo la marca VIISION.
+
+### Actividades
+
+#### 9.1 Migración de Base de Datos
+- Instalación de `@supabase/supabase-js` en frontend y backend
+- Creación de tablas en Supabase (ver [ANALISIS_BASE_DE_DATOS.md](ANALISIS_BASE_DE_DATOS.md)):
+  - `users` — usuarios del sistema
+  - `employees` — perfiles extendidos de empleados
+  - `otp_codes` — códigos OTP temporales
+  - `audit_logs` — historial de eventos de seguridad
+  - `analytics_tracking` — tráfico web
+- Refactorización completa de `server.js`: reemplazo de `readJSON`/`writeJSON` por cliente Supabase
+- Nuevas variables de entorno: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+
+#### 9.2 Módulo RRHH (HRMView)
+- CRUD completo de empleados:
+  - Listado con filtros y cards visuales
+  - Alta de empleado con generación automática de clave temporal (`TempXXXX!`)
+  - Envío de clave temporal al correo del empleado por Gmail
+  - Baja de empleado (elimina de Supabase)
+- Subvistas: Desempeño (`HRMDesempenoView`), Objetivos (`HRMObjetivosView`), Auditoría RRHH (`HRMAuditoriaView`)
+
+#### 9.3 Flujo "Primer Acceso" de Empleado
+- Nuevo campo `must_change_password` en tabla `users`
+- Nueva Vista `ForceChangePassword.tsx` — pantalla de cambio obligatorio en `/change-password`
+- Endpoint `POST /api/change-password` — actualiza contraseña y limpia el flag
+- `ProtectedRoute.tsx` verifica `mustChangePassword` y redirige si aplica
+
+#### 9.4 Módulos ERP
+- `MainDashboard.tsx` — panel principal con KPIs
+- `AnalyticsView.tsx` — analítica web (gráficos Recharts: tráfico diario, páginas top)
+- `InternalManagementView.tsx` — gestión interna empresarial
+- `SalesView.tsx` — módulo de ventas
+- `DevOpsView.tsx` — módulo DevOps
+- Endpoints de analítica: `GET /api/analytics/summary`, `POST /api/analytics/track`
+- Endpoint de conteo: `GET /api/users/count`
+
+#### 9.5 Control de Roles
+- Campo `role` en tabla `users` (`'admin'` / `'user'`)
+- `ProtectedRoute` acepta prop `allowedRoles`
+- Rutas admin-only: `/crm/rrhh/*`, `/analytics`, `/audit`, `/gestion-interna`
+- Usuario de administrador insertado manualmente en Supabase: `admin@erp.com` / `admin123`
+
+#### 9.6 Identidad de Marca VIISION
+- Paleta de colores `viision-50` a `viision-950` en `src/styles/theme.css`
+- Variables CSS semánticas: `--background`, `--primary`, `--sidebar`, `--chart-1..5`
+- Modo oscuro por defecto en `:root`
+- Tipografía **Inter** (Google Fonts) cargada en `index.html`
+- Logo oficial en `public/logo/viision-logo.png`
+- Componente `ShinyText.tsx` + `ShinyText.css` para texto de marca animado
+- Clase `card-glow` — efecto borde/glow sutil en cards principales
+- ERPLayout con sidebar usando tokens VIISION
+- Login con logo + ShinyText "VIISION"
+
+#### 9.7 Actualización de Rutas
+Se expandieron de 4 a 13 rutas:
+
+| Ruta | Componente | Acceso |
+|------|-----------|--------|
+| `/`, `/login` | LoginView | Público |
+| `/verify-otp` | OTPVerificationView | Público |
+| `/change-password` | ForceChangePassword | Público |
+| `/dashboard` | MainDashboard | Autenticado |
+| `/crm/rrhh` | HRMView | Admin |
+| `/crm/rrhh/desempeno` | HRMDesempenoView | Admin |
+| `/crm/rrhh/objetivos` | HRMObjetivosView | Admin |
+| `/crm/rrhh/auditoria` | HRMAuditoriaView | Admin |
+| `/analytics` | AnalyticsView | Admin |
+| `/audit` | AuditView | Admin |
+| `/gestion-interna` | InternalManagementView | Admin |
+| `/ventas` | SalesView | Autenticado |
+| `/devops` | DevOpsView | Autenticado |
+
+#### 9.8 Documentación Actualizada
+- 10 documentos en `docs/` (se agregaron: `ANALISIS_BASE_DE_DATOS.md`, `GUIA_DE_PRUEBAS_PARA_EL_PROFESOR.md`, `DOC_IDENTIDAD_VIISION.md`, `ESTILOS_MARCA_VIISION.md`)
+- Todos los docs existentes actualizados
+
+### Archivos Creados/Modificados en Fase 9
+- `server/server.js` — refactorización completa + nuevos endpoints
+- `server/.env` — nuevas variables Supabase
+- `.env` (raíz) — variables VITE_SUPABASE_* para frontend
+- `src/app/components/auth/ForceChangePassword.tsx` — nuevo
+- `src/app/components/erp/*.tsx` — 10 nuevos componentes
+- `src/app/components/layout/*.tsx` — layout ERP con sidebar
+- `src/app/components/ui/ShinyText.tsx` — nuevo
+- `src/styles/theme.css` — paleta VIISION completa
+- `src/app/routes.tsx` — 13 rutas
+- `public/logo/viision-logo.png` — logo VIISION
+- `docs/*.md` — 4 documentos nuevos + actualizaciones
+
+### Duración
+~4 horas
+
+---
+
 ## 📊 Resumen del Proyecto
 
 ### Tiempo Total de Desarrollo
-**~6 horas** (incluyendo análisis, implementación, pruebas y documentación)
+**~10 horas** (incluyendo análisis, implementación, migración a Supabase, ERP y documentación)
 
-### Líneas de Código
-- **Backend**: ~315 líneas (JavaScript)
-- **Frontend**: ~1000 líneas modificadas (TypeScript/React)
-- **Documentación**: ~600 líneas (Markdown)
+### Código
+
+| Capa | Tamaño aprox. | Lenguaje |
+|------|--------------|---------|
+| Backend (`server.js`) | ~311 líneas | JavaScript |
+| Componentes auth | ~55 KB | TypeScript/TSX |
+| Componentes ERP | ~83 KB | TypeScript/TSX |
+| Documentación | ~68 KB | Markdown |
 
 ### Tecnologías Utilizadas
-- **Frontend**: React, Vite, TypeScript, Tailwind CSS, Motion, React Router
-- **Backend**: Node.js, Express, Nodemailer, dotenv
-- **Email**: Gmail SMTP
-- **Persistencia**: JSON files
-- **Control de versiones**: Git
+- **Frontend**: React 18, Vite 6, TypeScript, Tailwind CSS 4, Motion, React Router 7, Recharts, Sonner, Radix UI, MUI 7
+- **Backend**: Node.js, Express, @supabase/supabase-js, Nodemailer, dotenv
+- **Base de datos**: Supabase (PostgreSQL)
+- **Email**: Gmail SMTP (App Password)
+- **Control de versiones**: Git + GitHub
 
 ### Características Implementadas
-✅ Registro de usuarios con nombre, email y contraseña  
-✅ Login con autenticación 2FA (OTP obligatorio)  
-✅ Verificación OTP por email real (Gmail)  
-✅ Dashboard protegido con información del usuario  
-✅ Límite de intentos (3) y expiración (10 min)  
-✅ Interfaz moderna con animaciones  
-✅ Scripts de utilidad para reset de BD  
-✅ Documentación completa  
 
-✅ Sistema de auditoría funcional con logs reales
+✅ Registro de usuarios con OTP por email real (Gmail)  
+✅ Login con validación contra Supabase  
+✅ Login 2FA con OTP obligatorio  
+✅ Dashboard protegido con información del usuario  
+✅ Límite de intentos OTP (3) y expiración (10 min)  
+✅ Módulo RRHH: alta, listado, baja de empleados  
+✅ Clave temporal automática para empleados nuevos (por correo)  
+✅ Cambio de contraseña obligatorio en primer acceso  
+✅ Sistema de auditoría con logs en Supabase  
+✅ Analítica web con gráficos de tráfico  
+✅ Control de roles (admin/user) y rutas protegidas  
+✅ Identidad de marca VIISION (paleta, logo, tipografía)  
+✅ Módulos ERP: Ventas, DevOps, Gestión Interna  
+✅ Documentación completa (10 documentos)
 
 ---
 
 ## 🎯 Próximos Pasos Sugeridos
 
 ### A Corto Plazo
-1. Expandir filtros en el módulo de auditoría
-2. Agregar tests unitarios (Jest + React Testing Library)
-3. Hashear contraseñas con bcrypt
-4. Agregar validación de formato de email
+1. Hashear contraseñas con bcrypt
+2. Reenvío de OTP desde la vista de verificación
+3. Filtros avanzados en analítica y auditoría
+4. Validación de formato de email en formularios
 
 ### A Mediano Plazo
-1. Migrar de JSON a base de datos real (PostgreSQL/MongoDB)
-2. Implementar renovación de sesiones (JWT)
-3. Agregar recuperación de contraseña
-4. Panel de administración
+1. JWT para gestión de sesiones (reemplazar localStorage)
+2. Recuperación de contraseña por email
+3. Edición de perfil de empleado
+4. Panel de administración de usuarios
 
 ### A Largo Plazo
 1. Dockerizar la aplicación
-2. Deploy en cloud (AWS, Vercel, Heroku)
-3. CI/CD con GitHub Actions
-4. Monitoreo y logging (Sentry, Winston)
+2. CI/CD con GitHub Actions
+3. Deploy: Vercel (frontend) + Railway/Render (backend)
+4. Monitoreo con Sentry
 
 ---
 
 ## 👥 Equipo de Desarrollo
 
-**Desarrollador Principal**: IA Asistente (Antigravity)  
-**Product Owner**: Usuario (alu_torre1)  
+| Integrante | Rol | Correo |
+|-----------|-----|--------|
+| Sebastián Landa | Líder / Backend | rlandabazan@gmail.com |
+| Eduardo Vega | Frontend | vegasoft09@gmail.com |
+| Ignacio Hernández | Frontend / QA | hernandz.j2004@gmail.com |
+
+**Empresa**: VIISION  
 **Metodología**: Desarrollo ágil iterativo  
 **Período**: Febrero 2026
 
@@ -393,6 +403,6 @@ Centralización de toda la documentación.
 
 ## 📝 Notas Finales
 
-Este proyecto demuestra una implementación funcional de un sistema de autenticación moderno con 2FA. Aunque utiliza archivos JSON para persistencia (apropiado para desarrollo y pruebas), la arquitectura está diseñada para facilitar la migración a una base de datos real en producción.
+Este proyecto demuestra una implementación funcional y escalable de un ERP empresarial moderno, partiendo de un sistema de autenticación OTP hasta convertirse en una plataforma multi-módulo con base de datos real (Supabase PostgreSQL), gestión de RRHH, analítica web y auditoría de seguridad, todo bajo la identidad de marca VIISION.
 
-El código está limpio, bien organizado y documentado, siguiendo principios de desarrollo profesional y buenas prácticas de la industria.
+El código está organizado siguiendo el patrón MVC, con componentes documentados y una arquitectura preparada para escalar a producción.

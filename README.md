@@ -1,22 +1,25 @@
-# 🔐 Sistema de Autenticación con Verificación OTP
+# VIISION ERP · Panel de Gestión Empresarial
 
-Sistema completo de autenticación con verificación por código OTP (One-Time Password) enviado por email. Implementa autenticación de dos factores (2FA) tanto en registro como en login.
+Sistema ERP completo desarrollado para **VIISION**, empresa tecnológica peruana. Incluye autenticación segura con OTP, gestión de Recursos Humanos, auditoría de eventos, analítica web y múltiples módulos empresariales.
 
-![Versión](https://img.shields.io/badge/version-1.0.0-blue)
-![Node](https://img.shields.io/badge/node-%3E%3D14.0.0-green)
+![Versión](https://img.shields.io/badge/version-2.0.0-blue)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)
 ![React](https://img.shields.io/badge/react-18.3.1-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Supabase](https://img.shields.io/badge/database-Supabase%20PostgreSQL-3ECF8E)
 
 ---
 
-## ✨ Características
+## ✨ Características Principales
 
-- 🔒 **Autenticación 2FA obligatoria** - OTP requerido en registro y login
-- 📧 **Envío real de emails** - Códigos OTP enviados vía Gmail SMTP
-- ⏱️ **Códigos con expiración** - 10 minutos de validez, 3 intentos máximo
-- 🎨 **Interfaz moderna** - Diseño dark mode con animaciones fluidas
-- 🔐 **Dashboard protegido** - Rutas protegidas con verificación de sesión
-- 📱 **Responsive design** - Funciona en desktop, tablet y móvil
+- 🔒 **Autenticación 2FA con OTP** — código de 6 dígitos por email (Gmail SMTP) en registro y login
+- 🗄️ **Base de datos Supabase** (PostgreSQL) — persistencia real y escalable
+- 👥 **Módulo RRHH** — registro, gestión y baja de empleados con clave temporal automática por correo
+- 🔑 **Flujo "primer acceso"** — cambio de contraseña obligatorio para empleados nuevos
+- 🛡️ **Auditoría de seguridad** — registro de todos los eventos críticos (login, registros, OTP, cambios)
+- 📊 **Analítica Web** — tráfico, sesiones únicas, páginas más visitadas con gráficos Recharts
+- 🎯 **Control de roles** — rutas protegidas por rol (`admin` / `user`)
+- 🎨 **Identidad VIISION** — paleta de marca, tipografía Inter, modo oscuro premium
+- 📱 **Responsive design** — compatible con desktop, tablet y móvil
 
 ---
 
@@ -24,9 +27,10 @@ Sistema completo de autenticación con verificación por código OTP (One-Time P
 
 ### Prerrequisitos
 
-- Node.js >= 14.0.0
-- npm o yarn
-- Cuenta de Gmail con App Password configurado
+- Node.js >= 18.0.0
+- npm
+- Proyecto en **Supabase** (PostgreSQL) con las tablas creadas (ver [docs/ANALISIS_BASE_DE_DATOS.md](docs/ANALISIS_BASE_DE_DATOS.md))
+- Cuenta de Gmail con App Password (para envío de OTP y claves temporales)
 
 ### Instalación
 
@@ -49,24 +53,32 @@ Sistema completo de autenticación con verificación por código OTP (One-Time P
    ```
 
 4. **Configurar variables de entorno**
-   
-   Crear archivo `server/.env`:
+
+   Crear archivo `.env` en la **raíz del proyecto** (para el frontend/Vite):
    ```env
-   GMAIL_USER=tu_email@gmail.com
-   GMAIL_APP_PASSWORD=tu_app_password_aqui
+   VITE_SUPABASE_URL=https://xxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=tu_anon_key
    ```
-   
-   > 💡 Ver [docs/INSTRUCCIONES.md](docs/INSTRUCCIONES.md) para obtener un App Password de Gmail
+
+   Crear archivo `server/.env` (para el backend):
+   ```env
+   SUPABASE_URL=https://xxxx.supabase.co
+   SUPABASE_ANON_KEY=tu_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+   GMAIL_USER=tu_email@gmail.com
+   GMAIL_APP_PASSWORD=tu_app_password_16_caracteres
+   ```
+
+   > 💡 Ver [docs/INSTRUCCIONES.md](docs/INSTRUCCIONES.md) para guía detallada paso a paso.
 
 5. **Ejecutar el proyecto**
 
-   **Terminal 1 - Backend:**
+   **Terminal 1 — Backend:**
    ```bash
-   cd server
    npm run server
    ```
 
-   **Terminal 2 - Frontend:**
+   **Terminal 2 — Frontend:**
    ```bash
    npm run dev
    ```
@@ -76,20 +88,30 @@ Sistema completo de autenticación con verificación por código OTP (One-Time P
    http://localhost:5173
    ```
 
+   Login de administrador por defecto:
+   - **Correo:** `admin@erp.com`
+   - **Contraseña:** `admin123`
+
 ---
 
 ## 📁 Estructura del Proyecto
 
 ```
-Login-con-verificación-OTP/
+proyectologin/
 ├── docs/                    # Documentación completa
-├── data/                    # Persistencia (JSON)
-├── server/                  # Backend (Node.js + Express)
-└── src/                     # Frontend (React + Vite)
-    ├── app/components/      # Componentes React
-    ├── controllers/         # Lógica de negocio
-    ├── models/              # Modelos y servicios
-    └── styles/              # Estilos globales
+├── data/                    # (legacy) Archivos JSON de fallback
+├── server/                  # Backend (Node.js + Express + Supabase)
+│   └── server.js            # API principal (~311 líneas)
+└── src/                     # Frontend (React + Vite + TypeScript)
+    ├── app/
+    │   ├── components/
+    │   │   ├── auth/        # Login, OTP, Dashboard, Auditoría, Cambio de clave
+    │   │   ├── erp/         # RRHH, Analítica, Ventas, DevOps, Gestión Interna
+    │   │   └── ui/          # Componentes de UI reutilizables (shadcn/ui + custom)
+    │   └── routes.tsx       # Definición de rutas (React Router)
+    ├── controllers/         # AuthController.ts
+    ├── models/              # User.ts, AuthService.ts
+    └── styles/              # theme.css, index.css
 ```
 
 Ver estructura detallada en [docs/ESTRUCTURA.md](docs/ESTRUCTURA.md)
@@ -99,137 +121,138 @@ Ver estructura detallada en [docs/ESTRUCTURA.md](docs/ESTRUCTURA.md)
 ## 🔧 Tecnologías
 
 ### Frontend
-- **React** 18.3.1 - Framework UI
-- **Vite** - Build tool ultrarrápido
-- **TypeScript** - Tipado estático
-- **Tailwind CSS** - Estilos utility-first
-- **Motion** - Animaciones
-- **React Router** - Navegación
+| Tecnología | Versión | Uso |
+|-----------|---------|-----|
+| **React** | 18.3.1 | Framework UI |
+| **Vite** | 6.x | Build tool |
+| **TypeScript** | — | Tipado estático |
+| **Tailwind CSS** | 4.x | Estilos utility-first |
+| **Motion** | 12.x | Animaciones |
+| **React Router** | 7.x | Navegación SPA |
+| **Recharts** | 2.x | Gráficos analítica |
+| **Sonner** | 2.x | Notificaciones toast |
+| **Radix UI / shadcn** | — | Componentes accesibles |
+| **MUI** | 7.x | Componentes adicionales |
 
 ### Backend
-- **Node.js** + **Express** - API RESTful
-- **Nodemailer** - Envío de emails
-- **dotenv** - Variables de entorno
+| Tecnología | Uso |
+|-----------|-----|
+| **Node.js + Express** | API RESTful (puerto 3001) |
+| **Supabase** (`@supabase/supabase-js`) | Base de datos PostgreSQL |
+| **Nodemailer** | Envío de emails (OTP + claves temporales) |
+| **dotenv** | Variables de entorno |
 
 ---
 
 ## 📖 Documentación
 
-- **[ESTRUCTURA.md](docs/ESTRUCTURA.md)** - Árbol de directorios y arquitectura
-- **[FASES_DESARROLLO.md](docs/FASES_DESARROLLO.md)** - Proceso de desarrollo completo
-- **[INSTRUCCIONES.md](docs/INSTRUCCIONES.md)** - Guía de instalación detallada
-- **[REQUERIMIENTOS.md](docs/REQUERIMIENTOS.md)** - Requerimientos del proyecto
+| Documento | Descripción |
+|-----------|-------------|
+| [README.md](README.md) | Este archivo — inicio rápido |
+| [ESTRUCTURA.md](docs/ESTRUCTURA.md) | Árbol de directorios y arquitectura |
+| [FASES_DESARROLLO.md](docs/FASES_DESARROLLO.md) | Proceso de desarrollo completo (8 fases) |
+| [INSTRUCCIONES.md](docs/INSTRUCCIONES.md) | Guía de instalación y ejecución |
+| [REQUERIMIENTOS.md](docs/REQUERIMIENTOS.md) | Requerimientos originales del proyecto |
+| [RESUMEN.md](docs/RESUMEN.md) | Resumen ejecutivo del estado actual |
+| [ANALISIS_BASE_DE_DATOS.md](docs/ANALISIS_BASE_DE_DATOS.md) | Esquema SQL Supabase y modelo relacional |
+| [GUIA_DE_PRUEBAS_PARA_EL_PROFESOR.md](docs/GUIA_DE_PRUEBAS_PARA_EL_PROFESOR.md) | Guía de evaluación del proyecto |
+| [DOC_IDENTIDAD_VIISION.md](docs/DOC_IDENTIDAD_VIISION.md) | Identidad y visión de la empresa |
+| [ESTILOS_MARCA_VIISION.md](docs/ESTILOS_MARCA_VIISION.md) | Manual de estilos y paleta de marca |
 
 ---
 
-## 🔑 Flujo de Usuario
+## 🗺️ Rutas del Sistema
 
-### Registro
-1. Usuario ingresa **nombre, email y contraseña**
-2. Sistema valida y crea cuenta
-3. **Código OTP enviado por email** (6 dígitos)
-4. Usuario ingresa código
-5. ✅ Cuenta verificada → Acceso al Dashboard
+| Ruta | Componente | Acceso |
+|------|-----------|--------|
+| `/` o `/login` | LoginView | Público |
+| `/verify-otp` | OTPVerificationView | Público |
+| `/change-password` | ForceChangePassword | Público (empleados) |
+| `/dashboard` | MainDashboard | Autenticado |
+| `/crm/rrhh` | HRMView | Admin |
+| `/crm/rrhh/desempeno` | HRMDesempenoView | Admin |
+| `/crm/rrhh/objetivos` | HRMObjetivosView | Admin |
+| `/crm/rrhh/auditoria` | HRMAuditoriaView | Admin |
+| `/analytics` | AnalyticsView | Admin |
+| `/audit` | AuditView | Admin |
+| `/gestion-interna` | InternalManagementView | Admin |
+| `/ventas` | SalesView | Autenticado |
+| `/devops` | DevOpsView | Autenticado |
 
-### Login
-1. Usuario ingresa **email y contraseña**
-2. Sistema valida credenciales
-3. **Código OTP enviado por email** (2FA)
-4. Usuario ingresa código
-5. ✅ OTP validado → Acceso al Dashboard
+---
+
+## 🔑 Flujos Principales
+
+### Registro de usuario
+1. Formulario con nombre, email y contraseña
+2. Backend crea usuario en Supabase, genera OTP
+3. OTP enviado por Gmail al usuario
+4. Usuario ingresa OTP → cuenta verificada → Dashboard
+
+### Login (2FA)
+1. Ingresa email y contraseña
+2. Contraseña validada contra Supabase
+3. Acceso directo al Dashboard (sin OTP en login actualmente)
+
+### Alta de empleado (Admin → RRHH)
+1. Admin ingresa datos del empleado
+2. Backend crea usuario en Supabase con **clave temporal** (`TempXXXX!`)
+3. Clave temporal enviada al correo del empleado
+4. Empleado inicia sesión → sistema redirige a `/change-password`
+5. Empleado establece contraseña definitiva → acceso normal
+
+### Módulo de Auditoría
+- Registra automáticamente: `USER_REGISTERED`, `LOGIN_FAILED`, `LOGIN_SUCCESS_DIRECT`, `OTP_VERIFIED_SUCCESS`, `EMPLOYEE_REGISTERED`
+- Captura IP, User-Agent y timestamp
+- Visible en `/audit` (admin)
 
 ---
 
 ## 🛠️ Scripts Disponibles
 
-### Frontend
 ```bash
-npm run dev          # Servidor de desarrollo (puerto 5173)
+# Frontend
+npm run dev          # Servidor de desarrollo (http://localhost:5173)
 npm run build        # Build de producción
 npm run preview      # Preview del build
-```
 
-### Backend
-```bash
-npm run server       # Iniciar servidor backend (puerto 3001)
-```
+# Backend (desde la raíz)
+npm run server       # Inicia el backend en http://localhost:3001
 
-### Utilidades
-```bash
-npm run reset-db     # Limpiar base de datos (multiplataforma)
-./reset-db.sh        # Limpiar BD (Bash/Linux/Mac)
-.\reset-db.ps1       # Limpiar BD (PowerShell/Windows)
+# Utilidad (legacy, base de datos JSON)
+./reset-db.sh        # Limpiar archivos JSON (Bash)
+.\\reset-db.ps1      # Limpiar archivos JSON (PowerShell)
 ```
 
 ---
 
 ## 🔐 Seguridad
 
-- ✅ Autenticación de dos factores (2FA)
-- ✅ Códigos OTP de un solo uso
-- ✅ Expiración automática (10 minutos)
-- ✅ Límite de intentos (3 máximo)
-- ✅ Variables sensibles en `.env` (no en Git)
+- ✅ Autenticación de dos factores (2FA) en registro
+- ✅ Códigos OTP de 6 dígitos con expiración (10 min) y límite de intentos (3)
+- ✅ Control de roles (`admin` / `user`) en rutas protegidas
+- ✅ Claves temporales con cambio obligatorio en primer acceso
+- ✅ Variables sensibles exclusivamente en `.env` (excluido de Git)
+- ✅ Auditoría de todos los eventos críticos de seguridad
 
-> ⚠️ **Nota**: En desarrollo, las contraseñas **no están hasheadas**. Para producción, implementar bcrypt.
-
----
-
-## 🤝 Contribuciones
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add: AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+> ⚠️ **Nota**: Las contraseñas están en texto plano (apropiado para desarrollo académico). En producción implementar **bcrypt** + **JWT**.
 
 ---
 
-## 📝 Roadmap
+## 👥 Equipo
 
-- [ ] Implementar módulo de auditoría completo
-- [ ] Hashear contraseñas con bcrypt
-- [ ] Migrar a base de datos PostgreSQL/MongoDB
-- [ ] Implementar JWT para sesiones
-- [ ] Agregar recuperación de contraseña
-- [ ] Tests unitarios y de integración
-- [ ] Docker containerization
-- [ ] Deploy en cloud (AWS/Vercel)
+| Integrante | Rol | Contacto |
+|-----------|-----|---------|
+| **Sebastián Landa** | Líder / Backend | rlandabazan@gmail.com |
+| **Eduardo Vega** | Frontend | vegasoft09@gmail.com |
+| **Ignacio Hernández** | Frontend / QA | hernandz.j2004@gmail.com |
 
----
-
-## 👥 Autores
-
-- **Sebastián Landa** - [GitHub](https://github.com/sebasrtianlandab)
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
----
-
-## 🙏 Agradecimientos
-
-- Diseño de UI inspirado en tendencias modernas de dark mode
-- Componentes UI basados en shadcn/ui
-- Sistema de animaciones con Motion (Framer Motion)
-
----
-
-## 📞 Soporte
-
-Si tienes alguna pregunta o problema:
-
-1. Revisa la [documentación](docs/)
-2. Abre un [issue](https://github.com/sebasrtianlandab/proyectologin/issues)
-3. Contacta al equipo de desarrollo
+**Empresa**: VIISION — *Transformamos procesos con tecnología accesible.*  
+**Repositorio**: https://github.com/sebasrtianlandab/proyectologin  
+**Período**: Febrero 2026
 
 ---
 
 <p align="center">
-  Hecho con ❤️ por el equipo de desarrollo
+  Desarrollado con ❤️ por el equipo <strong>VIISION</strong>
 </p>

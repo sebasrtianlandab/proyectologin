@@ -1,61 +1,151 @@
-# 🚀 Instrucciones de Ejecución
+# 🚀 Instrucciones de Ejecución — VIISION ERP
 
-## Paso 1: Configurar Variables de Entorno
+## Prerrequisitos
 
-1. Copia el archivo `.env.example` y renómbralo a `.env`:
-   ```bash
-   cp .env.example .env
+- **Node.js** v18 o superior
+- **npm** (viene con Node.js)
+- Proyecto en **Supabase** con las tablas creadas (ver [ANALISIS_BASE_DE_DATOS.md](ANALISIS_BASE_DE_DATOS.md))
+- Cuenta de **Gmail** con App Password configurado (para OTP y claves temporales)
+
+---
+
+## Paso 1: Configurar Supabase
+
+1. Crea un proyecto en https://supabase.com
+2. En el editor SQL de Supabase, ejecuta el script de [ANALISIS_BASE_DE_DATOS.md](ANALISIS_BASE_DE_DATOS.md) para crear las tablas
+3. Inserta el usuario administrador inicial ejecutando en el SQL Editor:
+   ```sql
+   INSERT INTO users (name, email, password, role, verified)
+   VALUES ('Administrador', 'admin@erp.com', 'admin123', 'admin', true);
    ```
+4. Obtén tus credenciales desde Settings → API:
+   - `Project URL` → `SUPABASE_URL` / `VITE_SUPABASE_URL`
+   - `anon public` → `SUPABASE_ANON_KEY` / `VITE_SUPABASE_ANON_KEY`
+   - `service_role secret` → `SUPABASE_SERVICE_ROLE_KEY`
 
-2. Edita el archivo `.env` y configura la **Contraseña de Aplicación de Gmail**:
+---
 
-   ### Cómo obtener la Contraseña de Aplicación:
-   - Ve a [https://myaccount.google.com/security](https://myaccount.google.com/security)
-   - Activa **"Verificación en dos pasos"** (si aún no está activa)
-   - Busca **"Contraseñas de aplicaciones"** (App Passwords)
-   - Genera una nueva para **"Correo"** > Dispositivo: **"Otro (Node.js)"**
-   - Copia los **16 caracteres** y pégalos en el archivo `.env`
+## Paso 2: Configurar Variables de Entorno
 
-   Ejemplo del archivo `.env`:
-   ```
-   GMAIL_USER=rlandabazan@gmail.com
-   GMAIL_APP_PASSWORD=abcd efgh ijkl mnop
-   ```
+### Archivo `.env` en la **raíz del proyecto** (para el frontend Vite)
 
-## Paso 2: Instalar Dependencias del Servidor
+```env
+VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=tu_anon_key_aqui
+```
 
-Abre una terminal en la carpeta `server`:
+### Archivo `server/.env` (para el backend Node.js)
+
+```env
+SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+SUPABASE_ANON_KEY=tu_anon_key_aqui
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
+
+# Opcional — requerido para envío de OTP y claves temporales
+GMAIL_USER=tu_email@gmail.com
+GMAIL_APP_PASSWORD=abcd efgh ijkl mnop
+```
+
+### Cómo obtener la Contraseña de Aplicación de Gmail
+
+1. Ve a https://myaccount.google.com/security
+2. Activa **"Verificación en dos pasos"** (si no está activa)
+3. Busca **"Contraseñas de aplicaciones"** (App Passwords)
+4. Genera una nueva para **"Correo"** → Dispositivo: **"Otro (Node.js)"**
+5. Copia los **16 caracteres** y pégalos en `GMAIL_APP_PASSWORD`
+
+> ⚠️ **Nunca subas el archivo `.env` a Git.** Ya está excluido por `.gitignore`.
+
+---
+
+## Paso 3: Instalar Dependencias
+
+### Dependencias del frontend (desde la raíz del proyecto):
+
+```bash
+npm install
+```
+
+### Dependencias del backend:
 
 ```bash
 cd server
 npm install
+cd ..
 ```
 
-## Paso 3: Ejecutar el Backend
+---
 
-Desde la carpeta `server`:
+## Paso 4: Ejecutar el Proyecto
+
+Es necesario tener **dos terminales** corriendo simultáneamente.
+
+### Terminal 1 — Backend (API)
+
+Desde la **raíz del proyecto**:
 
 ```bash
 npm run server
 ```
 
-Deberías ver: `🚀 Servidor corriendo en http://localhost:3001`
+Deberías ver:
+```
+🚀 Servidor en http://localhost:3001
+✅ Supabase conectado correctamente (tabla users accesible)
+```
 
-## Paso 4: Ejecutar el Frontend
+> Si ves `❌ Error conectando a Supabase`, revisa las variables en `server/.env`.
 
-Abre **OTRA TERMINAL** en la carpeta raíz del proyecto:
+### Terminal 2 — Frontend
+
+Desde la **raíz del proyecto**, en **otra terminal**:
 
 ```bash
 npm run dev
 ```
 
-Esto iniciará el Frontend en: `http://localhost:5173`
+Deberías ver que la app está disponible en `http://localhost:5173`.
 
 ---
 
-## ✅ Resumen: Debes tener 2 terminales corriendo
+## Paso 5: Acceder al Sistema
 
-1. **Terminal 1** (Backend): `server` → `npm run server` → Puerto 3001
-2. **Terminal 2** (Frontend): Carpeta raíz → `npm run dev` → Puerto 5173
+1. Abre el navegador en **http://localhost:5173**
+2. Inicia sesión con las credenciales de administrador:
+   - **Correo:** `admin@erp.com`
+   - **Contraseña:** `admin123`
 
-Abre el navegador en **http://localhost:5173** y prueba el registro/login. Los códigos OTP llegarán a los correos reales.
+---
+
+## ✅ Resumen: 2 Terminales Siempre Activas
+
+| Terminal | Comando | Puerto |
+|----------|---------|--------|
+| **Terminal 1** (Backend) | `npm run server` | 3001 |
+| **Terminal 2** (Frontend) | `npm run dev` | 5173 |
+
+---
+
+## 🔧 Scripts Adicionales
+
+```bash
+# Ver build de producción
+npm run build
+npm run preview
+
+# Limpiar archivos JSON legacy (si se usan)
+./reset-db.sh       # Git Bash / Linux / Mac
+.\reset-db.ps1      # PowerShell (Windows)
+```
+
+---
+
+## 🔍 Resolución de Problemas Frecuentes
+
+| Problema | Posible causa | Solución |
+|---------|--------------|---------|
+| Backend no arranca | `server/.env` mal configurado | Verificar `SUPABASE_URL` y claves |
+| "Servicio no configurado" en login | `SUPABASE_URL` vacío en `server/.env` | Revisar variables de entorno |
+| No llegan correos OTP | Gmail no configurado | Agregar `GMAIL_USER` y `GMAIL_APP_PASSWORD` |
+| Error 403 en rutas admin | Rol del usuario no es `'admin'` | Verificar campo `role` en Supabase → tabla `users` |
+| Frontend en blanco | `VITE_SUPABASE_URL` no está en `.env` raíz | Crear `.env` en raíz del proyecto |

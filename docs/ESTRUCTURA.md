@@ -1,133 +1,170 @@
-# 📁 Estructura del Proyecto - Sistema de Autenticación OTP
+# 📁 Estructura del Proyecto — VIISION ERP
 
 ## 🌳 Árbol de Directorios
 
 ```
-Login-con-verificación-OTP/
+proyectologin/
 │
-├── 📂 docs/                          # Documentación del proyecto
-│   ├── ESTRUCTURA.md                 # Este archivo - Estructura del proyecto
-│   ├── FASES_DESARROLLO.md          # Documentación de fases de desarrollo
-│   ├── INSTRUCCIONES.md             # Guía de instalación y ejecución
-│   └── REQUERIMIENTOS.md            # Requerimientos originales del proyecto
+├── 📂 docs/                               # Documentación del proyecto (10 docs)
+│   ├── ANALISIS_BASE_DE_DATOS.md          # Esquema SQL y modelo relacional Supabase
+│   ├── DOC_IDENTIDAD_VIISION.md           # Identidad y visión de VIISION
+│   ├── ESTILOS_MARCA_VIISION.md           # Manual de estilos y paleta de marca
+│   ├── ESTRUCTURA.md                      # Este archivo — árbol y arquitectura
+│   ├── FASES_DESARROLLO.md                # Proceso de desarrollo (8 fases)
+│   ├── GUIA_DE_PRUEBAS_PARA_EL_PROFESOR.md  # Guía de evaluación
+│   ├── INSTRUCCIONES.md                   # Instalación y ejecución paso a paso
+│   ├── LIMPIEZA.md                        # Historial de limpieza y organización
+│   ├── REQUERIMIENTOS.md                  # Requerimientos originales
+│   └── RESUMEN.md                         # Resumen ejecutivo del proyecto
 │
-├── 📂 data/                          # Persistencia de datos (JSON)
-│   ├── users.json                    # Base de datos de usuarios
-│   ├── otp.json                      # Códigos OTP temporales
-│   └── audit.json                    # Auditoría de eventos
+├── 📂 data/                               # (Legacy) JSON de fallback
+│   ├── users.json                         # Usuarios (no activo con Supabase)
+│   ├── otp.json                           # OTPs temporales (no activo con Supabase)
+│   └── audit.json                         # Auditoría (no activo con Supabase)
 │
-├── 📂 server/                        # Backend Node.js + Express
-│   ├── server.js                     # Servidor API principal
-│   ├── package.json                  # Dependencias del servidor
-│   ├── .env                          # Variables de entorno (NO en Git)
-│   └── node_modules/                 # Dependencias instaladas
+├── 📂 server/                             # Backend Node.js + Express
+│   ├── server.js                          # Servidor API principal (~311 líneas)
+│   ├── package.json                       # Dependencias del servidor
+│   ├── .env                               # Variables de entorno (NO en Git)
+│   └── node_modules/                      # Dependencias instaladas
 │
-├── 📂 src/                           # Frontend React + Vite
+├── 📂 src/                                # Frontend React + Vite + TypeScript
 │   │
-│   ├── 📂 app/                       # Componentes de la aplicación
-│   │   ├── 📂 components/
-│   │   │   ├── 📂 auth/             # Componentes de autenticación
-│   │   │   │   ├── RegisterView.tsx     # Vista de registro
-│   │   │   │   ├── LoginView.tsx        # Vista de login
-│   │   │   │   ├── OTPVerificationView.tsx  # Vista verificación OTP
-│   │   │   │   ├── DashboardView.tsx    # Dashboard protegido
-│   │   │   │   ├── AuditView.tsx        # Módulo de Auditoría (Admin)
-│   │   │   │   └── ProtectedRoute.tsx   # Guardia de rutas
-│   │   │   │
-│   │   │   └── 📂 ui/               # Componentes UI reutilizables
-│   │   │       ├── button.tsx
-│   │   │       ├── card.tsx
-│   │   │       ├── input.tsx
-│   │   │       ├── label.tsx
-│   │   │       └── input-otp.tsx
+│   ├── 📂 app/                            # Aplicación principal
 │   │   │
-│   │   ├── routes.tsx                # Definición de rutas (React Router)
-│   │   └── App.tsx                   # Componente raíz
+│   │   ├── 📂 components/
+│   │   │   │
+│   │   │   ├── 📂 auth/                   # Módulo de autenticación
+│   │   │   │   ├── LoginView.tsx              # Pantalla de inicio de sesión
+│   │   │   │   ├── RegisterView.tsx            # Pantalla de registro
+│   │   │   │   ├── OTPVerificationView.tsx     # Verificación de código OTP
+│   │   │   │   ├── ForceChangePassword.tsx     # Cambio obligatorio de contraseña
+│   │   │   │   ├── DashboardView.tsx           # Dashboard de usuario (deprecated/legacy)
+│   │   │   │   ├── AuditView.tsx               # Módulo de auditoría de seguridad
+│   │   │   │   └── ProtectedRoute.tsx          # Guardia de rutas por rol
+│   │   │   │
+│   │   │   ├── 📂 erp/                    # Módulos ERP del sistema
+│   │   │   │   ├── MainDashboard.tsx          # Dashboard principal del ERP
+│   │   │   │   ├── HRMView.tsx                # Recursos Humanos (CRUD empleados)
+│   │   │   │   ├── HRMTabs.tsx                # Tabs de navegación RRHH
+│   │   │   │   ├── HRMDesempenoView.tsx        # Subvista: Desempeño
+│   │   │   │   ├── HRMObjetivosView.tsx        # Subvista: Objetivos
+│   │   │   │   ├── HRMAuditoriaView.tsx        # Subvista: Auditoría RRHH
+│   │   │   │   ├── AnalyticsView.tsx           # Analítica web con gráficos
+│   │   │   │   ├── InternalManagementView.tsx  # Gestión Interna
+│   │   │   │   ├── SalesView.tsx               # Módulo de Ventas
+│   │   │   │   └── DevOpsView.tsx              # Módulo DevOps
+│   │   │   │
+│   │   │   └── 📂 ui/                     # Componentes UI reutilizables (~50)
+│   │   │       ├── button.tsx, card.tsx, input.tsx, label.tsx
+│   │   │       ├── input-otp.tsx, dialog.tsx, table.tsx
+│   │   │       ├── ShinyText.tsx + ShinyText.css  # Texto animado VIISION
+│   │   │       ├── sidebar.tsx               # Sidebar del ERP
+│   │   │       └── ... (shadcn/ui + Radix UI)
+│   │   │
+│   │   ├── routes.tsx                     # Definición de 13 rutas (React Router)
+│   │   └── App.tsx                        # Componente raíz
 │   │
-│   ├── 📂 controllers/               # Lógica de negocio (MVC)
-│   │   └── AuthController.ts         # Controlador de autenticación
+│   ├── 📂 controllers/                    # Lógica de negocio (MVC)
+│   │   └── AuthController.ts              # Controlador de autenticación
 │   │
-│   ├── 📂 models/                    # Modelos de datos (MVC)
-│   │   ├── User.ts                   # Interfaces de Usuario, OTP, Session
-│   │   └── AuthService.ts            # Servicio de autenticación (API calls)
+│   ├── 📂 models/                         # Modelos de datos (MVC)
+│   │   ├── User.ts                        # Interfaces: User, OTPData, Session
+│   │   └── AuthService.ts                 # Servicio: llamadas a API backend
 │   │
-│   ├── 📂 styles/                    # Estilos globales
-│   │   └── index.css                 # CSS principal (Tailwind)
+│   ├── 📂 styles/                         # Estilos globales
+│   │   ├── theme.css                      # Paleta VIISION, tokens semánticos, modo oscuro
+│   │   └── index.css                      # CSS de entrada (importa theme.css)
 │   │
-│   └── main.tsx                      # Punto de entrada React
+│   ├── main.tsx                           # Punto de entrada React
+│   └── vite-env.d.ts                      # Tipos Vite
 │
-├── 📂 public/                        # Archivos estáticos públicos
+├── 📂 public/                             # Assets estáticos públicos
+│   └── logo/
+│       └── viision-logo.png               # Logo oficial VIISION
 │
-├── 📄 .gitignore                     # Archivos ignorados por Git
-├── 📄 package.json                   # Dependencias frontend
-├── 📄 vite.config.ts                 # Configuración Vite
-├── 📄 index.html                     # HTML principal
-├── 📄 reset-db.sh                    # Script limpieza BD (Bash)
-├── 📄 reset-db.ps1                   # Script limpieza BD (PowerShell)
-└── 📄 README.md                      # Descripción del proyecto
-
+├── 📄 .env                                # Variables para frontend (VITE_SUPABASE_*)
+├── 📄 .gitignore                          # Excluye node_modules, .env, dist
+├── 📄 index.html                          # HTML principal (título, fuentes, favicon)
+├── 📄 package.json                        # Dependencias frontend + scripts
+├── 📄 vite.config.ts                      # Configuración Vite
+├── 📄 tsconfig.json                       # Config TypeScript
+├── 📄 postcss.config.mjs                  # PostCSS (Tailwind)
+├── 📄 reset-db.sh                         # Script limpieza JSON (Bash)
+├── 📄 reset-db.ps1                        # Script limpieza JSON (PowerShell)
+└── 📄 README.md                           # Descripción del proyecto
 ```
 
 ---
 
-## 📋 Descripción de Directorios Principales
+## 📋 Descripción de Directorios y Módulos
 
 ### 🗂️ `/docs`
-Contiene toda la documentación del proyecto:
-- **Estructura del proyecto** (árbol de directorios)
-- **Fases de desarrollo** (proceso de creación)
-- **Instrucciones de instalación y ejecución**
-- **Requerimientos del proyecto**
+10 documentos de soporte que cubren todos los aspectos del proyecto: arquitectura, desarrollo, estilos, base de datos, guía de pruebas e identidad de marca.
 
-### 🗄️ `/data`
-Almacena la persistencia de datos en formato JSON:
-- `users.json`: Usuarios registrados (id, nombre, email, contraseña, verificado, fecha)
-- `otp.json`: Códigos OTP temporales (código, intentos, expiración)
-- `audit.json`: Logs de auditoría (registros de inicio de sesión, fallos, etc.)
-
-### ⚙️ `/server`
-Backend Node.js con Express:
-- **API RESTful** para autenticación
-- **Nodemailer** para envío de emails (Gmail SMTP)
-- **Gestión de OTPs** y validación
-- **Puerto**: 3001
+### 📂 `/server`
+Backend Node.js + Express con las siguientes responsabilidades:
+- **Autenticación**: registro, login, verificación OTP, cambio de contraseña
+- **RRHH**: CRUD de empleados con generación de claves temporales y envío por email
+- **Auditoría**: registra eventos de seguridad en Supabase
+- **Analítica**: rastreo de visitas y resumen de tráfico
+- **Integración Supabase**: todas las operaciones de base de datos
 
 ### 🎨 `/src`
-Frontend React con Vite:
-- **Arquitectura MVC-like**: Separación en Models, Views, Controllers
-- **React Router** para navegación
-- **Componentes UI** modernos con animaciones
-- **Tailwind CSS** para estilos
-- **Puerto**: 5173
+Frontend React con arquitectura **MVC-like**:
+
+#### Módulo `auth/` — Autenticación
+| Componente | Función |
+|-----------|---------|
+| `LoginView.tsx` | Formulario email + contraseña |
+| `RegisterView.tsx` | Formulario nombre + email + contraseña |
+| `OTPVerificationView.tsx` | Input de 6 dígitos para verificar OTP |
+| `ForceChangePassword.tsx` | Cambio obligatorio de clave temporal |
+| `AuditView.tsx` | Dashboard de eventos de seguridad |
+| `ProtectedRoute.tsx` | HOC que verifica sesión y rol |
+
+#### Módulo `erp/` — ERP VIISION
+| Componente | Función |
+|-----------|---------|
+| `MainDashboard.tsx` | Panel principal con KPIs y acceso rápido |
+| `HRMView.tsx` | RRHH: listado y alta de empleados |
+| `HRMDesempenoView.tsx` | Desempeño de empleados |
+| `HRMObjetivosView.tsx` | Objetivos del equipo |
+| `HRMAuditoriaView.tsx` | Auditoría específica de RRHH |
+| `AnalyticsView.tsx` | Analítica web con gráficos Recharts |
+| `InternalManagementView.tsx` | Gestión interna empresarial |
+| `SalesView.tsx` | Módulo de ventas |
+| `DevOpsView.tsx` | Módulo DevOps |
 
 ---
 
-## 🔑 Componentes Clave
+## 🔑 Endpoints API
 
-### Backend (`/server/server.js`)
-Rutas API:
-- `POST /api/register` - Registro de usuario + envío OTP
-- `POST /api/login` - Validación credenciales + envío OTP (2FA)
-- `POST /api/verify-otp` - Verificación código OTP
-- `GET /api/user/:email` - Obtener datos de usuario
-- `GET /api/audit` - Obtener logs de auditoría
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `POST` | `/api/register` | Registro usuario + OTP + email |
+| `POST` | `/api/login` | Login con validación Supabase |
+| `POST` | `/api/verify-otp` | Verificación código OTP |
+| `POST` | `/api/change-password` | Cambio de contraseña (clave temporal) |
+| `GET` | `/api/users/count` | Conteo total de usuarios |
+| `GET` | `/api/employees` | Listado de empleados |
+| `POST` | `/api/employees` | Alta de empleado + clave temporal |
+| `DELETE` | `/api/employees/:id` | Baja de empleado |
+| `GET` | `/api/audit` | Últimos 100 eventos de auditoría |
+| `GET` | `/api/analytics/summary` | Resumen de analítica web |
+| `POST` | `/api/analytics/track` | Registrar visita de página |
 
-### Frontend - Arquitectura MVC
+---
 
-**Modelos** (`/src/models/`):
-- `User.ts` - Interfaces: User, OTPData, Session
-- `AuthService.ts` - Comunicación con API backend
+## 🗄️ Tablas Supabase (PostgreSQL)
 
-**Controladores** (`/src/controllers/`):
-- `AuthController.ts` - Lógica de registro, login, verificación
-
-**Vistas** (`/src/app/components/auth/`):
-- `RegisterView.tsx` - Formulario de registro
-- `LoginView.tsx` - Formulario de inicio de sesión
-- `OTPVerificationView.tsx` - Validación código OTP
-- `DashboardView.tsx` - Panel protegido
-- `AuditView.tsx` - Visualización de logs de auditoría
-- `ProtectedRoute.tsx` - Protección de rutas
+| Tabla | Columnas clave |
+|-------|---------------|
+| `users` | id (UUID), name, email, password, role, verified, must_change_password, created_at |
+| `employees` | id, user_id (FK), name, email, phone, employee_type, department, position, hire_date, status |
+| `otp_codes` | id, user_id (FK), code, attempts, max_attempts, expires_at |
+| `audit_logs` | id, user_id (FK), email, action, ip, user_agent, timestamp |
+| `analytics_tracking` | id, path, ip, user_agent, timestamp |
 
 ---
 
@@ -135,85 +172,79 @@ Rutas API:
 
 | Archivo | Descripción |
 |---------|-------------|
-| `package.json` | Dependencias React, Vite, UI libs + script reset-db |
-| `server/package.json` | Dependencias Express, Nodemailer, CORS |
-| `vite.config.ts` | Configuración del bundler Vite |
-| `server/.env` | Variables de entorno (Gmail credentials) |
-| `.gitignore` | Excluye node_modules, .env, dist |
-| `reset-db.*` | Scripts para limpiar base de datos (sh/ps1) |
-
-### Scripts Útiles
-
-**Limpieza de base de datos** (3 opciones):
-```bash
-# Opción 1: Script npm (multiplataforma)
-npm run reset-db
-
-# Opción 2: Bash (Git Bash / Linux / Mac)
-./reset-db.sh
-
-# Opción 3: PowerShell (Windows)
-.\reset-db.ps1
-```
+| `package.json` | Dependencias React, Vite, UI libs, scripts dev/build/server |
+| `server/package.json` | Dependencias Express, Supabase, Nodemailer, CORS |
+| `vite.config.ts` | Config Vite + plugin React |
+| `.env` (raíz) | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
+| `server/.env` | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` |
+| `src/styles/theme.css` | Paleta VIISION, variables semánticas, modo oscuro, tokens chart |
+| `.gitignore` | Excluye `node_modules/`, `.env`, `dist/` |
 
 ---
 
 ## 📦 Dependencias Principales
 
 ### Frontend
-- **React** - Framework UI
-- **Vite** - Build tool y dev server
-- **React Router** - Navegación
-- **Tailwind CSS** - Estilos utility-first
-- **Motion** - Animaciones
-- **Sonner** - Notificaciones toast
-- **Lucide React** - Iconos
+| Paquete | Versión | Uso |
+|---------|---------|-----|
+| `react` | 18.3.1 | Framework UI |
+| `vite` | 6.x | Build tool |
+| `react-router` | 7.x | Navegación |
+| `tailwindcss` | 4.x | Estilos |
+| `motion` | 12.x | Animaciones |
+| `recharts` | 2.x | Gráficos |
+| `sonner` | 2.x | Toasts |
+| `@radix-ui/*` | 1–2.x | Componentes accesibles |
+| `@mui/material` | 7.x | Material UI |
+| `lucide-react` | 0.487 | Iconos |
+| `@supabase/supabase-js` | 2.x | Cliente Supabase (frontend) |
 
 ### Backend
-- **Express** - Framework web Node.js
-- **Nodemailer** - Envío de emails
-- **CORS** - Manejo de CORS
-- **dotenv** - Variables de entorno
+| Paquete | Uso |
+|---------|-----|
+| `express` | Servidor HTTP |
+| `@supabase/supabase-js` | Base de datos PostgreSQL |
+| `nodemailer` | Envío de emails |
+| `cors` | CORS middleware |
+| `dotenv` | Variables de entorno |
 
 ---
 
 ## 🚀 Flujo de Datos
 
 ```
-Usuario → Frontend (React) → API Backend (Express) → Data (JSON)
-                                      ↓
-                              Gmail SMTP (Nodemailer)
-                                      ↓
-                              Email Usuario (OTP)
+Usuario → Frontend React (Puerto 5173)
+                ↓
+          Express API (Puerto 3001)
+                ↓                ↓
+        Supabase (PostgreSQL)  Gmail SMTP
+        (users, employees,     (OTP codes,
+         audit_logs, etc.)      claves tmp)
 ```
 
 ---
 
 ## 🔐 Seguridad
 
-- **Autenticación 2FA**: OTP obligatorio en login y registro
-- **Expiración de códigos**: 10 minutos
-- **Límite de intentos**: 3 máximo
-- **Variables sensibles**: Almacenadas en `.env` (excluido de Git)
-- **Códigos únicos**: Generados con `Math.random()`
+- **Autenticación 2FA** en registro (OTP por email)
+- **Roles**: `admin` y `user`, aplicados en `ProtectedRoute`
+- **Expiración OTP**: 10 minutos, máximo 3 intentos
+- **Claves temporales**: `TempXXXX!` generadas automáticamente, cambio obligatorio
+- **Variables sensibles**: en `.env` (excluido de Git por `.gitignore`)
+- **Auditoría**: todos los eventos críticos registrados en Supabase
 
 ---
 
-## 📝 Notas Importantes
+## 🎯 Estado Actual (Febrero 2026)
 
-1. **Contraseñas**: Actualmente NO están hasheadas (solo desarrollo)
-2. **Base de datos**: JSON files simulan BD (migrar a PostgreSQL/MongoDB para producción)
-3. **Gmail App Password**: Necesario para envío de correos
-4. **Node.js**: Se requiere versión 14+ para ejecutar el servidor
-
----
-
-## 🎯 Estado Actual
-
-✅ **Implementado:**
-- Sistema completo de registro
-- Login con autenticación 2FA
-- Verificación OTP por email
-- Dashboard protegido
-- Módulo de auditoría integral (v1.0)
-- Interfaz profesional sin mensajes de desarrollo
+✅ **Implementado y funcional:**
+- Sistema completo de autenticación (registro + OTP + login)
+- Dashboard ERP principal con identidad VIISION
+- Módulo RRHH (alta, listado, baja, desempeño, objetivos, auditoría RRHH)
+- Flujo de empleado (clave temporal → primer acceso → cambio de contraseña)
+- Módulo de Auditoría de seguridad
+- Analítica Web con gráficos
+- Gestión Interna, Ventas, DevOps
+- Control de roles y rutas protegidas
+- Integración completa con Supabase (PostgreSQL)
+- Identidad de marca VIISION en toda la interfaz
