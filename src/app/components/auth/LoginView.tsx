@@ -1,4 +1,4 @@
-// View: Componente de Login – Marca VIISION
+// View: Login/Registro Unificado – Estética Minimalista de Lujo (Alineado con StoreFront)
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { resetSidebarForNextEntry } from '../layout/sidebarState';
@@ -7,14 +7,16 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import { ShinyText } from '../ui/ShinyText';
 import { toast } from 'sonner';
-import { Mail, Lock, Sparkles } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Mail, Lock, User, ArrowRight, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function LoginView() {
+  const [isRegister, setIsRegister] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -22,174 +24,224 @@ export function LoginView() {
     resetSidebarForNextEntry();
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    setTimeout(async () => {
-      const result = await AuthController.login(email, password);
+    if (isRegister && password !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      setIsLoading(false);
+      return;
+    }
 
-      if (result.success) {
-        if (result.requiresOTP) {
-          toast.info(result.message, {
-            description: 'Revisa tu correo electrónico',
-          });
+    try {
+      if (isRegister) {
+        const result = await AuthController.register(name, email, password);
+        if (result.success) {
+          toast.success('Cuenta creada', { description: 'Verifica tu correo.' });
           navigate('/verify-otp');
-        } else if (result.user?.mustChangePassword) {
-          toast.warning('¡Bienvenido! Debes cambiar tu contraseña temporal para continuar.', {
-            duration: 5000,
-          });
-          navigate('/change-password', { state: { email: result.user.email } });
         } else {
-          toast.success(result.message);
-          navigate('/dashboard');
+          toast.error(result.message);
         }
       } else {
-        toast.error(result.message);
+        const result = await AuthController.login(email, password);
+        if (result.success) {
+          if (result.requiresOTP) {
+            navigate('/verify-otp');
+          } else if (result.user?.mustChangePassword) {
+            navigate('/change-password', { state: { email: result.user.email } });
+          } else {
+            toast.success(`Bienvenido`);
+            if (result.user?.role === 'admin' || result.user?.role === 'empleado' || email.toLowerCase().endsWith('@senati.pe')) {
+              navigate('/dashboard');
+            } else {
+              navigate('/tienda');
+            }
+          }
+        } else {
+          toast.error(result.message);
+        }
       }
-
+    } catch (error) {
+      toast.error('Error de conexión');
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black via-[#0f0a1a] to-black p-4 relative overflow-hidden">
-      {/* Efectos de fondo – tonos VIISION (púrpura-azul) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-viision-600/20 rounded-full blur-[100px]"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-viision-500/20 rounded-full blur-[100px]"
-          animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.6, 0.4] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-1/2 right-1/3 w-72 h-72 bg-viision-400/15 rounded-full blur-[80px]"
-          animate={{ scale: [1, 1.3, 1], x: [0, 50, 0], y: [0, -50, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-        {[...Array(16)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-viision-400/40 rounded-full"
-            style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
-            animate={{ y: [0, -100, 0], opacity: [0, 1, 0] }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCF8] text-stone-900 font-sans p-6 selection:bg-stone-200">
 
-      {/* Marca: logo + VIISION con ShinyText */}
+      {/* Background Decor - Subtle Line */}
+      <div className="absolute top-0 left-1/2 w-px h-full bg-stone-200 -z-10 hidden md:block" />
+
+      {/* Top Brand (Alineado con Nav de la tienda) */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col items-center gap-3 mb-8 relative z-10"
+        className="mb-12 flex flex-col items-center gap-2 cursor-pointer"
+        onClick={() => navigate('/tienda')}
       >
-        <img
-          src="/logo/viision-logo.png"
-          alt="VIISION"
-          className="w-16 h-16 object-contain drop-shadow-lg"
-        />
-        <ShinyText
-          text="VIISION"
-          speed={5}
-          className="text-4xl md:text-5xl font-bold uppercase tracking-wide"
-        />
+        <span className="text-3xl font-black text-stone-900 tracking-[0.3em] uppercase">
+          VII<span className="text-stone-400">S</span>ION
+        </span>
+        <div className="h-px w-12 bg-stone-900 mt-2" />
       </motion.div>
 
       <motion.div
+        layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-[440px] z-10"
       >
-        <Card className="w-full bg-card/90 backdrop-blur-xl card-glow">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-foreground">Iniciar sesión</CardTitle>
-            <CardDescription className="text-center text-muted-foreground">
-              Ingresa tus credenciales para acceder
+        <Card className="bg-white border border-stone-200 shadow-none rounded-none p-4 md:p-8">
+          <CardHeader className="space-y-4 pt-4 pb-8 text-center md:text-left px-0">
+            <div className="inline-block py-1 px-4 bg-stone-100 text-stone-600 font-semibold text-[9px] tracking-[0.3em] uppercase w-fit mx-auto md:mx-0 border border-stone-200 mb-2">
+              {isRegister ? 'Registro de Cliente' : 'Acceso Privado'}
+            </div>
+            <CardTitle className="text-3xl font-light text-stone-900 tracking-tight leading-none">
+              {isRegister ? (
+                <>Crea tu <span className="font-serif italic font-medium text-stone-800">perfil.</span></>
+              ) : (
+                <>Bienvenido de <span className="font-serif italic font-medium text-stone-800">nuevo.</span></>
+              )}
+            </CardTitle>
+            <CardDescription className="text-stone-500 font-light text-sm tracking-wide">
+              {isRegister
+                ? 'Únete a nuestra exclusiva selección de clientes contemporáneos.'
+                : 'Ingresa tus credenciales para acceder a tu ecosistema digital.'}
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-5">
-              <motion.div
-                className="space-y-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Label htmlFor="email" className="text-foreground">Email</Label>
+
+          <form onSubmit={handleAuth}>
+            <CardContent className="space-y-6 px-0">
+              <AnimatePresence mode="wait">
+                {isRegister && (
+                  <motion.div
+                    key="name"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-2 overflow-hidden"
+                  >
+                    <Label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-stone-900">Nombre Completo</Label>
+                    <div className="relative group">
+                      <User className="absolute left-0 top-3 h-4 w-4 text-stone-400 group-focus-within:text-stone-900 transition-colors" strokeWidth={1.5} />
+                      <Input
+                        placeholder="Escribe tu nombre"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="bg-transparent pl-7 border-0 border-b border-stone-200 focus-visible:ring-0 focus-visible:border-stone-900 rounded-none h-11 transition-all placeholder:text-stone-400 text-sm text-stone-900"
+                        required={isRegister}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-stone-900">Dirección Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-viision-400/80 group-focus-within:text-viision-400 transition-colors" />
+                  <Mail className="absolute left-0 top-3 h-4 w-4 text-stone-400 group-focus-within:text-stone-900 transition-colors" strokeWidth={1.5} />
                   <Input
-                    id="email"
                     type="email"
-                    placeholder="tu@email.com"
+                    placeholder="email@ejemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input-dark-bg pl-9 border-viision-600/40 text-viision-300 placeholder:text-muted-foreground focus:border-viision-500 focus:ring-viision-500/20 transition-all"
+                    className="bg-transparent pl-7 border-0 border-b border-stone-200 focus-visible:ring-0 focus-visible:border-stone-900 rounded-none h-11 transition-all placeholder:text-stone-400 text-sm text-stone-900"
                     required
                   />
                 </div>
-              </motion.div>
-              <motion.div
-                className="space-y-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Label htmlFor="password" className="text-foreground">Contraseña</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-stone-900">Contraseña</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-viision-400/80 group-focus-within:text-viision-400 transition-colors" />
+                  <Lock className="absolute left-0 top-3 h-4 w-4 text-stone-400 group-focus-within:text-stone-900 transition-colors" strokeWidth={1.5} />
                   <Input
-                    id="password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-dark-bg pl-9 border-viision-600/40 text-viision-300 placeholder:text-muted-foreground focus:border-viision-500 focus:ring-viision-500/20 transition-all"
+                    className="bg-transparent pl-7 border-0 border-b border-stone-200 focus-visible:ring-0 focus-visible:border-stone-900 rounded-none h-11 transition-all placeholder:text-stone-400 text-sm text-stone-900"
                     required
                   />
                 </div>
-              </motion.div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4 pt-8">
-              <motion.div
-                className="w-full"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <Button
-                  type="submit"
-                  className="w-full bg-primary hover:bg-viision-700 text-primary-foreground border-0 shadow-lg shadow-viision-600/30 hover:shadow-viision-600/40 transition-all duration-300 relative overflow-hidden"
-                  disabled={isLoading}
+                {!isRegister && (
+                  <button type="button" className="text-[10px] uppercase tracking-widest text-stone-600 hover:text-stone-900 transition-colors mt-2 block ml-auto">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                )}
+              </div>
+
+              {isRegister && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="space-y-2"
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {isLoading ? (
-                      <>
-                        <Sparkles className="w-4 h-4 animate-spin" />
-                        Iniciando sesión...
-                      </>
-                    ) : (
-                      'Iniciar sesión'
-                    )}
+                  <Label className="text-[10px] uppercase tracking-[0.2em] font-semibold text-stone-900">Confirmar Contraseña</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-0 top-3 h-4 w-4 text-stone-400 group-focus-within:text-stone-900 transition-colors" strokeWidth={1.5} />
+                    <Input
+                      type="password"
+                      placeholder="Repite tu contraseña"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-transparent pl-7 border-0 border-b border-stone-200 focus-visible:ring-0 focus-visible:border-stone-900 rounded-none h-11 transition-all placeholder:text-stone-400 text-sm text-stone-900"
+                      required={isRegister}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </CardContent>
+
+            <CardFooter className="flex flex-col gap-6 px-0 pb-4 mt-12">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-14 bg-stone-900 hover:bg-stone-800 text-white rounded-none uppercase text-xs tracking-[0.2em] font-medium shadow-xl shadow-stone-900/10 transition-transform active:scale-95 transition-all"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">Cargando...</span>
+                ) : (
+                  <span className="flex items-center gap-2 tracking-[0.2em]">
+                    {isRegister ? 'Crear Perfil' : 'Acceder'}
+                    <ArrowRight size={14} strokeWidth={2} />
                   </span>
-                </Button>
-              </motion.div>
+                )}
+              </Button>
+
+              <div className="flex items-center justify-center gap-4 text-[11px] uppercase tracking-widest text-stone-400">
+                <span className="w-8 h-px bg-stone-100" />
+                <span>O</span>
+                <span className="w-8 h-px bg-stone-100" />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRegister(!isRegister)}
+                className="w-full h-12 border border-stone-200 hover:border-stone-900 hover:bg-stone-50 text-stone-900 rounded-none uppercase text-[10px] tracking-[0.2em] font-semibold transition-all"
+              >
+                {isRegister ? 'Ya tengo cuenta' : 'Crear nueva cuenta'}
+              </button>
             </CardFooter>
           </form>
         </Card>
       </motion.div>
+
+      {/* Footer Details - Minimalista */}
+      <div className="mt-16 flex flex-col md:flex-row gap-10 opacity-50 pointer-events-none">
+        <div className="flex items-center gap-3 text-stone-900">
+          <ShoppingBag className="w-5 h-5" strokeWidth={1} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Safe Retail Store</span>
+        </div>
+        <div className="flex items-center gap-3 text-stone-900">
+          <ShieldCheck className="w-5 h-5" strokeWidth={1} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Business Enterprise Ops</span>
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -14,12 +14,31 @@ import { AnalyticsView } from './components/erp/AnalyticsView';
 import { InternalManagementView } from './components/erp/InternalManagementView';
 import { SalesView } from './components/erp/SalesView';
 import { DevOpsView } from './components/erp/DevOpsView';
+import { StoreFront } from './components/store/StoreFront';
+import { ProductCatalogView } from './components/store/ProductCatalogView';
 
 export const router = createBrowserRouter([
   // Ruta raíz
   {
     path: '/',
     element: <LoginView />,
+  },
+  // Tienda Pública / Clientes (Solo accesibles para clientes logueados, no empleados)
+  {
+    path: '/tienda',
+    element: (
+      <ProtectedRoute excludeDomains={['senati.pe']} allowPublic={true}>
+        <StoreFront />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tienda/productos',
+    element: (
+      <ProtectedRoute excludeDomains={['senati.pe']} allowPublic={true}>
+        <ProductCatalogView />
+      </ProtectedRoute>
+    ),
   },
   // Autenticación
   {
