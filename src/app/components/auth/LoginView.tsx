@@ -9,12 +9,14 @@ import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { ShinyText } from '../ui/ShinyText';
 import { toast } from 'sonner';
-import { Mail, Lock, Sparkles } from 'lucide-react';
+import { Mail, Lock, Sparkles, User, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function LoginView() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -27,25 +29,46 @@ export function LoginView() {
     setIsLoading(true);
 
     setTimeout(async () => {
-      const result = await AuthController.login(email, password);
-
-      if (result.success) {
-        if (result.requiresOTP) {
-          toast.info(result.message, {
-            description: 'Revisa tu correo electrónico',
-          });
+      if (isRegistering) {
+        const result = await AuthController.register(name, email, password);
+        if (result.success) {
+          toast.success("¡Registro exitoso! Por favor verifica tu correo.");
           navigate('/verify-otp');
-        } else if (result.user?.mustChangePassword) {
-          toast.warning('¡Bienvenido! Debes cambiar tu contraseña temporal para continuar.', {
-            duration: 5000,
-          });
-          navigate('/change-password', { state: { email: result.user.email } });
         } else {
-          toast.success(result.message);
-          navigate('/dashboard');
+          toast.error(result.message);
         }
       } else {
-        toast.error(result.message);
+        const result = await AuthController.login(email, password);
+
+        if (result.success) {
+          if (result.requiresOTP) {
+            toast.info(result.message, {
+              description: 'Revisa tu correo electrónico',
+            });
+            navigate('/verify-otp');
+          } else if (result.user?.mustChangePassword) {
+            toast.warning('¡Bienvenido! Debes cambiar tu contraseña temporal para continuar.', {
+              duration: 5000,
+            });
+            navigate('/change-password', { state: { email: result.user.email } });
+          } else {
+            toast.success(result.message);
+
+            // Guardar usuario en LocalStorage para persistencia en la sesión
+            localStorage.setItem('viision_user', JSON.stringify(result.user));
+
+            // Redirección basada en dominio/rol (los customers van a Landing, empleados/admin al ERP)
+            if (result.user?.role === 'customer') {
+              navigate('/');
+            } else if (result.user?.role === 'admin') {
+              navigate('/dashboard');
+            } else {
+              navigate('/ventas');
+            }
+          }
+        } else {
+          toast.error(result.message);
+        }
       }
 
       setIsLoading(false);
@@ -87,6 +110,20 @@ export function LoginView() {
         ))}
       </div>
 
+      {/* Botón de Regresar Página Principal */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        onClick={() => navigate('/')}
+        className="absolute top-8 left-8 z-50 flex items-center gap-2 text-gray-400 hover:text-white transition-all group"
+      >
+        <div className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20 transition-all">
+          <ArrowLeft className="w-5 h-5" />
+        </div>
+        <span className="text-xs font-bold uppercase tracking-widest hidden sm:block">Regresar a la tienda</span>
+      </motion.button>
+
       {/* Marca: logo + VIISION con ShinyText */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -112,15 +149,41 @@ export function LoginView() {
         transition={{ duration: 0.5, delay: 0.15 }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="w-full bg-card/90 backdrop-blur-xl card-glow">
+        <Card className="w-full bg-card/90 backdrop-blur-xl card-glow border-viision-600/20">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-foreground">Iniciar sesión</CardTitle>
-            <CardDescription className="text-center text-muted-foreground">
-              Ingresa tus credenciales para acceder
+            <CardTitle className="text-3xl font-black text-center tracking-tight text-white">
+              {isRegistering ? 'Crear mi cuenta' : 'Inicio de sesión'}
+            </CardTitle>
+            <CardDescription className="text-center text-gray-400">
+              {isRegistering
+                ? 'Únete a la nueva generación de hardware'
+                : 'Ingresa tus credenciales para continuar tu compra'}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-5">
+              {isRegistering && (
+                <motion.div
+                  className="space-y-2"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                >
+                  <Label htmlFor="name" className="text-white font-medium">Nombre completo</Label>
+                  <div className="relative group">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-viision-400/80 group-focus-within:text-viision-400 transition-colors" />
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Jhon Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-black/40 border-viision-600/30 text-white placeholder:text-gray-600 focus:border-viision-500 focus:ring-1 focus:ring-viision-500/20 rounded-xl pl-9"
+                      required={isRegistering}
+                    />
+                  </div>
+                </motion.div>
+              )}
+
               <motion.div
                 className="space-y-2"
                 initial={{ opacity: 0, x: -20 }}
@@ -136,7 +199,7 @@ export function LoginView() {
                     placeholder="tu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input-dark-bg pl-9 border-viision-600/40 text-viision-300 placeholder:text-muted-foreground focus:border-viision-500 focus:ring-viision-500/20 transition-all"
+                    className="bg-black/40 border-viision-600/30 text-white placeholder:text-gray-600 focus:border-viision-500 focus:ring-1 focus:ring-viision-500/20 rounded-xl pl-9"
                     required
                   />
                 </div>
@@ -156,7 +219,7 @@ export function LoginView() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-dark-bg pl-9 border-viision-600/40 text-viision-300 placeholder:text-muted-foreground focus:border-viision-500 focus:ring-viision-500/20 transition-all"
+                    className="bg-black/40 border-viision-600/30 text-white placeholder:text-gray-600 focus:border-viision-500 focus:ring-1 focus:ring-viision-500/20 rounded-xl pl-9"
                     required
                   />
                 </div>
@@ -178,18 +241,31 @@ export function LoginView() {
                     {isLoading ? (
                       <>
                         <Sparkles className="w-4 h-4 animate-spin" />
-                        Iniciando sesión...
+                        {isRegistering ? 'Creando cuenta...' : 'Iniciando sesión...'}
                       </>
                     ) : (
-                      'Iniciar sesión'
+                      isRegistering ? 'Crear mi Cuenta' : 'Iniciar sesión'
                     )}
                   </span>
                 </Button>
               </motion.div>
+
+              <div className="text-center pt-2">
+                <p className="text-sm text-gray-500">
+                  {isRegistering ? '¿Ya tienes una cuenta?' : '¿No tienes una cuenta?'}
+                  <button
+                    type="button"
+                    onClick={() => setIsRegistering(!isRegistering)}
+                    className="ml-2 text-viision-400 font-bold hover:underline"
+                  >
+                    {isRegistering ? 'Inicia sesión' : 'Regístrate aquí'}
+                  </button>
+                </p>
+              </div>
             </CardFooter>
           </form>
         </Card>
       </motion.div>
-    </div>
+    </div >
   );
 }

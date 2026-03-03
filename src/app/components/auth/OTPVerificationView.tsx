@@ -30,11 +30,15 @@ export function OTPVerificationView() {
       const result = await AuthController.verifyOTP(otp);
 
       if (result.success) {
-        toast.success(result.message, {
-          description: 'Redirigiendo al panel...',
-        });
+        toast.success(result.message);
         setTimeout(() => {
-          navigate('/dashboard');
+          if (result.user?.role === 'customer') {
+            navigate('/');
+          } else if (result.user?.role === 'admin') {
+            navigate('/dashboard');
+          } else {
+            navigate('/ventas');
+          }
         }, 1000);
       } else {
         toast.error(result.message);

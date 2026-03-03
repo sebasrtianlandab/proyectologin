@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
     LayoutDashboard, Users, ShieldCheck, BarChart3, LogOut,
     ChevronDown, ChevronRight, Menu, X, Bell, Settings,
-    ShoppingCart, Terminal
+    ShoppingCart, Terminal, Globe, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShinyText } from '../ui/ShinyText';
@@ -58,6 +58,12 @@ const navGroups: { group: string; items: NavItem[] }[] = [
         items: [
             { label: 'Analítica Web', icon: BarChart3, path: '/analytics', roles: ['admin'] },
             { label: 'Auditoría', icon: ShieldCheck, path: '/audit', roles: ['admin'] },
+        ]
+    },
+    {
+        group: 'ACCESO RÁPIDO',
+        items: [
+            { label: 'Ver Tienda (Público)', icon: Globe, path: '/', roles: ['admin', 'user'] },
         ]
     },
 ];
@@ -151,12 +157,12 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                                                     <button
                                                         onClick={() => {
                                                             if (item.children) {
-                                                                toggleExpand(item.path || '');
+                                                                toggleExpand(item.path);
                                                             } else {
-                                                                navigate(item.path || '/dashboard');
+                                                                navigate(item.path);
                                                             }
                                                         }}
-                                                        className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all ${isActive(item.path || '') || (item.children && isParentActive(item.children))
+                                                        className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-all ${isActive(item.path) || (item.children && isParentActive(item.children))
                                                             ? 'bg-viision-600/20 text-viision-400 font-semibold border-l-2 border-viision-500'
                                                             : 'text-gray-300 hover:bg-white/5 hover:text-white'
                                                             }`}
@@ -166,20 +172,20 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                                                             {item.label}
                                                         </span>
                                                         {item.children && (
-                                                            expanded.includes(item.path || '')
+                                                            expanded.includes(item.path)
                                                                 ? <ChevronDown className="w-3 h-3" />
                                                                 : <ChevronRight className="w-3 h-3" />
                                                         )}
                                                     </button>
-                                                    {item.children && expanded.includes(item.path || '') && (
-                                                        <div className="ml-6 mt-0.5 space-y-0.5">
+                                                    {item.children && expanded.includes(item.path) && (
+                                                        <div className="pl-6 pt-1 pb-2 space-y-1">
                                                             {item.children.map(child => (
                                                                 <button
                                                                     key={child.path}
                                                                     onClick={() => navigate(child.path)}
                                                                     className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-all ${isActive(child.path)
                                                                         ? 'bg-viision-600/20 text-viision-400 font-semibold'
-                                                                        : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                                                                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                                                         }`}
                                                                 >
                                                                     {child.label}
@@ -228,6 +234,16 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
                             <h1 className="text-base font-bold text-foreground">{title}</h1>
                             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
                         </div>
+
+                        {/* Botón rápido a la tienda */}
+                        <button
+                            onClick={() => navigate('/')}
+                            className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-viision-600/10 hover:bg-viision-600/20 text-viision-600 rounded-full border border-viision-600/20 transition-all group ml-4"
+                        >
+                            <Globe className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">Ver Tienda</span>
+                            <ExternalLink className="w-3 h-3 opacity-50" />
+                        </button>
                     </div>
                     <div className="flex items-center gap-2">
                         <button className="p-2 hover:bg-accent rounded-lg transition-colors relative">

@@ -14,12 +14,13 @@ import { AnalyticsView } from './components/erp/AnalyticsView';
 import { InternalManagementView } from './components/erp/InternalManagementView';
 import { SalesView } from './components/erp/SalesView';
 import { DevOpsView } from './components/erp/DevOpsView';
+import { LandingWeb } from './components/LandingWeb';
 
 export const router = createBrowserRouter([
-  // Ruta raíz
+  // Ruta raíz (Landing Page Pública)
   {
     path: '/',
-    element: <LoginView />,
+    element: <LandingWeb />,
   },
   // Autenticación
   {

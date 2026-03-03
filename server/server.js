@@ -60,7 +60,8 @@ app.post('/api/register', async (req, res) => {
 
     const { data: existingUser } = await supabase.from('users').select('id').eq('email', email).single();
     if (existingUser) return res.status(400).json({ success: false, message: 'El email ya está registrado' });
-    const { data: newUser, error: createError } = await supabase.from('users').insert([{ name, email, password, role: 'user', verified: false }]).select().single();
+    const defaultRole = email.endsWith('@erp.com') ? 'user' : 'customer';
+    const { data: newUser, error: createError } = await supabase.from('users').insert([{ name, email, password, role: defaultRole, verified: false }]).select().single();
     if (createError) throw createError;
     await logAudit('USER_REGISTERED', newUser.id, email, req);
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -98,10 +99,25 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Credenciales inválidas' });
     }
 
+    // --- DOMAIN-BASED ROLE LOGIC ---
+    // If the user logging in has a specific domain, they are treated as an employee in the frontend routing,
+    // otherwise they are treated as a customer and will stay on the landing page.
+    let computedRole = user.role; // Default from DB
+
+    // Solo modificar el rol si NO son administradores ya asignados
+    if (computedRole !== 'admin') {
+      if (email.endsWith('@erp.com')) {
+        computedRole = 'user'; // Mapeamos directo a 'user' para el layout ERP
+      } else {
+        // Regular customers (gmail, etc)
+        computedRole = 'customer';
+      }
+    }
+
     await logAudit('LOGIN_SUCCESS_DIRECT', user.id, email, req);
     res.json({
       success: true,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, mustChangePassword: user.must_change_password }
+      user: { id: user.id, name: user.name, email: user.email, role: computedRole, mustChangePassword: user.must_change_password }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error de login' });
@@ -147,25 +163,71 @@ app.get('/api/employees', async (req, res) => {
 app.post('/api/employees', async (req, res) => {
   try {
     if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
-    const { name, email, phone, employeeType, department, position, hireDate, status } = req.body;
-    const tempPassword = `Temp${Math.floor(1000 + Math.random() * 9000)}!`;
-    const { data: newUser, error: userError } = await supabase.from('users').insert([{
-      name, email, password: tempPassword, role: 'user', verified: true, must_change_password: true
-    }]).select().single();
-    if (userError) return res.status(400).json({ success: false, message: 'Error al crear credenciales' });
+    let { name, email, phone, employeeType, department, position, hireDate, status } = req.body;
+
+    // Auto-generar dominio @erp.com para asegurar acceso al sistema interno
+    // Si mandaron john@gmail.com -> lo convertimos a john@erp.com
+    const originalEmail = email;
+    if (!email.endsWith('@erp.com')) {
+      const userPart = email.split('@')[0];
+      // Agregamos sufijo numérico si es necesario o simplemente lo cambiamos
+      email = `${userPart.toLowerCase()}@erp.com`;
+    }
+
+    // Primero, verificamos si el usuario ya existe (por ejemplo, si se registró como cliente antes)
+    const { data: existingUser } = await supabase.from('users').select('id, role').eq('email', email).single();
+
+    let userId;
+
+    if (existingUser) {
+      userId = existingUser.id;
+      // Actualizamos su rol a 'user' si era 'customer', pero sin quitarle el 'admin' si lo es.
+      if (existingUser.role !== 'admin') {
+        await supabase.from('users').update({ role: 'user' }).eq('id', userId);
+      }
+    } else {
+      // Si no existe, creamos el usuario con clave temporal
+      const tempPassword = `Temp${Math.floor(1000 + Math.random() * 9000)}!`;
+      const { data: newUser, error: userError } = await supabase.from('users').insert([{
+        name, email, password: tempPassword, role: 'user', verified: true, must_change_password: true
+      }]).select().single();
+
+      if (userError) {
+        console.error('Error creando credenciales en DB:', userError.message);
+        return res.status(400).json({ success: false, message: 'Error al crear credenciales: ' + userError.message });
+      }
+
+      userId = newUser.id;
+
+      // Enviar correo a su correo original (personal) con su nueva credencial ERP
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: originalEmail,
+        subject: '🎉 Bienvenido al Sistema ERP',
+        html: `<h3>Hola ${name}</h3>
+               <p>Te hemos habilitado el acceso como empleado del sistema.</p>
+               <p>Para entrar al panel, usa tu <b>correo corporativo</b> recién creado:</p>
+               <p><b>Usuario:</b> <code>${email}</code></p>
+               <p><b>Clave Temporal:</b> <code>${tempPassword}</code></p>
+               <p><small>Nota: Usa estas credenciales en el inicio de sesión para entrar directo al sistema.</small></p>`
+      });
+    }
+
+    // Insertar el registro en la tabla employees
     const { error: empError } = await supabase.from('employees').insert([{
-      user_id: newUser.id, name, email, phone, employee_type: employeeType, department, position, hire_date: hireDate, status
+      user_id: userId, name, email, phone, employee_type: employeeType, department, position, hire_date: hireDate, status
     }]);
-    if (empError) throw empError;
-    await logAudit('EMPLOYEE_REGISTERED', newUser.id, email, req);
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: '🎉 Bienvenido al Sistema',
-      html: `<h3>Hola ${name}</h3><p>Tu clave temporal es: <code>${tempPassword}</code></p>`
-    });
-    res.json({ success: true, message: 'Empleado creado' });
+
+    if (empError) {
+      console.error('Error insertando en employees:', empError.message);
+      return res.status(400).json({ success: false, message: 'Error al registrar el perfil de empleado: ' + empError.message });
+    }
+
+    await logAudit('EMPLOYEE_REGISTERED', userId, email, req);
+
+    res.json({ success: true, message: 'Empleado creado correctamente' });
   } catch (error) {
+    console.error('Catch error en /api/employees:', error);
     res.status(500).json({ success: false, message: 'Error al registrar' });
   }
 });
@@ -178,6 +240,152 @@ app.delete('/api/employees/:id', async (req, res) => {
 });
 
 // ==================== OTROS ====================
+
+// ==================== PRODUCTOS Y VENTAS ====================
+
+app.get('/api/products', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false, products: [] });
+  const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  res.json({ success: !error, products: data || [] });
+});
+
+app.get('/api/sales', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false, sales: [] });
+  // Hacemos join con productos para obtener el nombre
+  const { data, error } = await supabase
+    .from('sales')
+    .select(`*, products(name, price)`)
+    .order('created_at', { ascending: false });
+  res.json({ success: !error, sales: data || [] });
+});
+
+app.post('/api/sales', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
+  const { product_id, customer_email, quantity, total_amount, status } = req.body;
+  const { data, error } = await supabase.from('sales').insert([{
+    product_id, customer_email, quantity, total_amount, status
+  }]).select().single();
+
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, sale: data });
+});
+
+app.post('/api/checkout', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no disponible' });
+  const { cart, customer_email } = req.body;
+
+  if (!cart || !Array.isArray(cart) || cart.length === 0) {
+    return res.status(400).json({ success: false, message: 'El carrito está vacío' });
+  }
+
+  try {
+    const salesData = cart.map(item => ({
+      product_id: item.product.id,
+      customer_email: customer_email || 'invitado@web.com',
+      quantity: item.quantity,
+      total_amount: item.product.price * item.quantity,
+      status: 'Completado'
+    }));
+
+    const { data: sales, error } = await supabase.from('sales').insert(salesData).select('*, products(name)');
+    if (error) throw error;
+
+    // Calcular total general
+    const granTotal = cart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
+
+    // Preparar el correo de confirmación
+    const itemsHtml = cart.map(item => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product.name}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">$${(item.product.price * item.quantity).toFixed(2)}</td>
+      </tr>
+    `).join('');
+
+    const emailHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #000; text-align: center;">¡Gracias por tu compra en VIISION!</h2>
+        <p>Hola, hemos recibido tu pedido y ya lo estamos preparando.</p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+          <thead>
+            <tr style="background: #f8f8f8;">
+              <th style="padding: 10px; text-align: left;">Producto</th>
+              <th style="padding: 10px; text-align: center;">Cant.</th>
+              <th style="padding: 10px; text-align: right;">Precio</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" style="padding: 20px 10px; text-align: right; font-weight: bold;">TOTAL:</td>
+              <td style="padding: 20px 10px; text-align: right; font-weight: bold; font-size: 1.2em;">$${granTotal.toFixed(2)}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div style="margin-top: 30px; border-top: 2px solid #000; padding-top: 20px; text-align: center; color: #666; font-size: 0.8em;">
+          <p>VIISION STORE - Próxima Generación de Hardware</p>
+          <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+        </div>
+      </div>
+    `;
+
+    // Enviar el correo si hay un email válido
+    if (customer_email && customer_email.includes('@')) {
+      await transporter.sendMail({
+        from: `VIISION STORE <${process.env.GMAIL_USER}>`,
+        to: customer_email,
+        subject: ' Confirmación de Pedido - VIISION STORE',
+        html: emailHtml
+      });
+    }
+
+    res.json({ success: true, message: 'Orden procesada con éxito', sales });
+  } catch (err) {
+    console.error('Error en checkout:', err);
+    res.status(500).json({ success: false, message: 'Error procesando la compra' });
+  }
+});
+
+app.put('/api/sales/:id', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
+  const { id } = req.params;
+  const { status, quantity, total_amount } = req.body;
+  const { data, error } = await supabase.from('sales').update({
+    status, quantity, total_amount, updated_at: new Date()
+  }).eq('id', id).select().single();
+
+  if (error) return res.status(400).json({ success: false, error: error.message });
+  res.json({ success: true, sale: data });
+});
+
+app.delete('/api/sales/:id', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
+  const { id } = req.params;
+  const { error } = await supabase.from('sales').delete().eq('id', id);
+  res.json({ success: !error });
+});
+
+app.get('/api/analytics/product-clicks', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false, count: 0 });
+  const { count, error } = await supabase.from('product_clicks').select('*', { count: 'exact', head: true });
+  res.json({ success: !error, count: count || 0 });
+});
+
+// Endpoint para rastrear clics en productos desde el Landing Page
+app.post('/api/analytics/product-click', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
+  const { product_id, user_email } = req.body;
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress;
+  const user_agent = req.headers['user-agent'];
+
+  const { error } = await supabase.from('product_clicks').insert([{
+    product_id, ip, user_agent, user_email
+  }]);
+  res.json({ success: !error });
+});
+
 
 app.get('/api/audit', async (req, res) => {
   if (!supabase) return res.status(503).json({ success: false, audits: [] });
@@ -294,6 +502,129 @@ app.post('/api/analytics/track', async (req, res) => {
   };
   if (supabase) await supabase.from('analytics_tracking').insert([payload]);
   res.json({ success: true });
+});
+
+// GET /api/products - Obtener todos los productos
+app.get('/api/products', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('id', { ascending: false }); // Usamos id como fallback si no hay created_at
+    if (error) throw error;
+    res.json({ success: true, products: data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/products - Crear producto
+app.post('/api/products', async (req, res) => {
+  try {
+    const { name, description, price, image_url, category } = req.body;
+    const { data, error } = await supabase.from('products').insert([{ name, description, price, image_url, category }]).select().single();
+    if (error) throw error;
+    res.json({ success: true, product: data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// PUT /api/products/:id - Editar producto
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, image_url, category } = req.body;
+    const { data, error } = await supabase.from('products').update({ name, description, price, image_url, category }).eq('id', id).select().single();
+    if (error) throw error;
+    res.json({ success: true, product: data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/products/:id - Eliminar producto
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ===== ANALYTICS: Ventas por Fecha =====
+app.get('/api/analytics/sales-by-date', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('sales')
+      .select('created_at, total_amount')
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    // Agrupar por fecha
+    const grouped = data.reduce((acc, sale) => {
+      const date = new Date(sale.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+      acc[date] = (acc[date] || 0) + Number(sale.total_amount);
+      return acc;
+    }, {});
+
+    const chartData = Object.entries(grouped).map(([date, amount]) => ({ date, amount }));
+    res.json({ success: true, data: chartData });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ===== ANALYTICS: Top Productos =====
+app.get('/api/analytics/top-products', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('sales')
+      .select('quantity, products(name)');
+
+    if (error) throw error;
+
+    const grouped = data.reduce((acc, item) => {
+      const name = item.products?.name || 'Desconocido';
+      acc[name] = (acc[name] || 0) + item.quantity;
+      return acc;
+    }, {});
+
+    const chartData = Object.entries(grouped)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    res.json({ success: true, data: chartData });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ===== ANALYTICS: Auditoría Detallada de Tráfico =====
+app.get('/api/analytics/detailed-traffic', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('product_clicks')
+      .select(`
+        id,
+        clicked_at,
+        ip,
+        user_email,
+        products (name)
+      `)
+      .order('clicked_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    res.json({ success: true, traffic: data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 app.listen(PORT, async () => {
