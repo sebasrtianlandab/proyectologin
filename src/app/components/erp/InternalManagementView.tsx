@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
-const API = 'http://localhost:3001/api';
+import { mockGetEmployees, mockGetAudit } from '../../../mocks/api';
 
 export function InternalManagementView() {
     const navigate = useNavigate();
@@ -18,12 +18,10 @@ export function InternalManagementView() {
     const load = async () => {
         setLoading(true);
         try {
-            const [empRes, auditRes] = await Promise.all([
-                fetch(`${API}/employees`),
-                fetch(`${API}/audit`),
+            const [empData, auditData] = await Promise.all([
+                mockGetEmployees(),
+                mockGetAudit(),
             ]);
-            const empData = await empRes.json();
-            const auditData = await auditRes.json();
             if (empData.success) setEmployees(empData.employees);
             if (auditData.success) setAudits(auditData.audits);
         } catch {

@@ -1,5 +1,5 @@
-// Service: Conexión con Backend API
-const API_URL = 'http://localhost:3001/api';
+// Service: datos mock (sin backend). Cuando exista API, se reconecta aquí.
+import { mockLogin, mockRegister, mockVerifyOTP, mockGetUser } from '../mocks/api';
 
 export interface Session {
   userId: string;
@@ -11,43 +11,24 @@ export interface Session {
 }
 
 export class AuthService {
-  // ===== REGISTRO =====
+  // ===== REGISTRO (mock) =====
   static async register(name: string, email: string, password: string) {
-    const response = await fetch(`${API_URL}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    return await response.json();
+    return mockRegister(name, email, password);
   }
 
-  // ===== LOGIN =====
+  // ===== LOGIN (mock) =====
   static async login(email: string, password: string) {
-    const response = await fetch(`${API_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    return await response.json();
+    return mockLogin(email, password);
   }
 
-  // ===== VERIFICAR OTP =====
+  // ===== VERIFICAR OTP (mock) =====
   static async verifyOTP(email: string, code: string) {
-    const response = await fetch(`${API_URL}/verify-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
-    });
-
-    return await response.json();
+    return mockVerifyOTP(email, code);
   }
 
-  // ===== OBTENER USUARIO =====
+  // ===== OBTENER USUARIO (mock) =====
   static async getUser(email: string) {
-    const response = await fetch(`${API_URL}/user/${email}`);
-    return await response.json();
+    return mockGetUser(email);
   }
 
   // ===== SESIÓN (localStorage) =====

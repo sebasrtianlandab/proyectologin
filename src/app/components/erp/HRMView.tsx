@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-const API = 'http://localhost:3001/api';
+import { mockGetEmployees, mockCreateEmployeeApi, mockDeleteEmployeeApi } from '../../../mocks/api';
 
 interface Employee {
     id: string;
@@ -68,8 +68,7 @@ export function HRMView() {
     const loadEmployees = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API}/employees`);
-            const data = await res.json();
+            const data = await mockGetEmployees();
             if (data.success) setEmployees(data.employees);
         } catch {
             toast.error('Error al cargar empleados');
@@ -85,12 +84,7 @@ export function HRMView() {
         if (!form.name || !form.email) return;
         setSaving(true);
         try {
-            const res = await fetch(`${API}/employees`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
-            });
-            const data = await res.json();
+            const data = await mockCreateEmployeeApi(form);
             if (data.success) {
                 toast.success(`✅ Empleado registrado exitosamente`, {
                     description: `Se ha enviado una clave de acceso temporal al correo ${form.email}. El empleado deberá cambiarla en su primer inicio de sesión.`,
@@ -113,10 +107,7 @@ export function HRMView() {
         if (!confirm('¿Estás seguro de que deseas eliminar este empleado? Esta acción no se puede deshacer y también eliminará su usuario asociado.')) return;
 
         try {
-            const res = await fetch(`${API}/employees/${id}`, {
-                method: 'DELETE',
-            });
-            const data = await res.json();
+            const data = await mockDeleteEmployeeApi(id);
             if (data.success) {
                 toast.success('Empleado eliminado correctamente');
                 loadEmployees();

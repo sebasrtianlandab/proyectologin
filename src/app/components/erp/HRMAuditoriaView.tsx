@@ -3,7 +3,7 @@ import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { ShieldCheck, User, RefreshCw, Activity } from 'lucide-react';
 
-const API = 'http://localhost:3001/api';
+import { mockGetAudit } from '../../../mocks/api';
 
 const HR_ACTIONS = ['EMPLOYEE_REGISTERED', 'PASSWORD_CHANGED', 'USER_REGISTERED', 'EMPLOYEE_DELETED'];
 
@@ -21,8 +21,7 @@ export function HRMAuditoriaView() {
     const load = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API}/audit`);
-            const data = await res.json();
+            const data = await mockGetAudit();
             if (data.success && Array.isArray(data.audits)) {
                 const hrAudits = data.audits.filter((a: any) => HR_ACTIONS.includes(a.action));
                 setAudits(hrAudits);

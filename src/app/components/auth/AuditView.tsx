@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ERPLayout } from '../layout/ERPLayout';
+import { mockGetAudit } from '../../../mocks/api';
 
 export const AuditView: React.FC = () => {
     const [audits, setAudits] = useState<any[]>([]);
@@ -14,8 +15,7 @@ export const AuditView: React.FC = () => {
     const fetchAudits = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3001/api/audit');
-            const data = await response.json();
+            const data = await mockGetAudit();
             if (data.success) {
                 setAudits(data.audits);
             } else {

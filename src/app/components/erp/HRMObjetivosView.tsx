@@ -3,7 +3,7 @@ import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { Target, User, CheckCircle2, Circle, RefreshCw } from 'lucide-react';
 
-const API = 'http://localhost:3001/api';
+import { mockGetEmployees } from '../../../mocks/api';
 
 interface Employee {
     id: string;
@@ -20,8 +20,7 @@ export function HRMObjetivosView() {
     const load = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API}/employees`);
-            const data = await res.json();
+            const data = await mockGetEmployees();
             if (data.success) setEmployees(data.employees || []);
         } finally {
             setLoading(false);

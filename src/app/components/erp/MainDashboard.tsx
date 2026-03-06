@@ -7,8 +7,7 @@ import {
     ArrowUpRight, Clock, Zap
 } from 'lucide-react';
 import { motion } from 'motion/react';
-
-const API = 'http://localhost:3001/api';
+import { mockGetAnalyticsSummary, mockGetAudit, mockGetUsersCount, mockTrackAnalytics } from '../../../mocks/api';
 
 export function MainDashboard() {
     const session = AuthService.getSession();
@@ -24,15 +23,11 @@ export function MainDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [visitRes, auditRes, usersRes] = await Promise.all([
-                    fetch(`${API}/analytics/summary`),
-                    fetch(`${API}/audit`),
-                    fetch(`${API}/users/count`),
+                const [visitData, auditData, usersData] = await Promise.all([
+                    mockGetAnalyticsSummary(7),
+                    mockGetAudit(),
+                    mockGetUsersCount(),
                 ]);
-                const visitData = await visitRes.json();
-                const auditData = await auditRes.json();
-                const usersData = await usersRes.json();
-
                 setStats({
                     totalVisits: visitData.totalVisits || 0,
                     uniqueSessions: visitData.uniqueSessions || 0,
@@ -46,8 +41,7 @@ export function MainDashboard() {
             }
         };
         fetchStats();
-        // Registrar visita
-        fetch(`${API}/analytics/track`, { method: 'POST' }).catch(() => { });
+        mockTrackAnalytics();
     }, []);
 
     const kpiColor = 'bg-viision-50 text-viision-600';

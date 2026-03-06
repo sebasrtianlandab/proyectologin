@@ -4,8 +4,7 @@ import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AuthService } from '../../../models/AuthService';
-
-const API = 'http://localhost:3001/api';
+import { mockChangePasswordApi } from '../../../mocks/api';
 
 export function ForceChangePassword() {
     const navigate = useNavigate();
@@ -32,12 +31,7 @@ export function ForceChangePassword() {
         if (!allOk) return;
         setLoading(true);
         try {
-            const res = await fetch(`${API}/change-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, newPassword }),
-            });
-            const data = await res.json();
+            const data = await mockChangePasswordApi(email, newPassword);
             if (data.success) {
                 toast.success('¡Contraseña actualizada exitosamente!', {
                     description: 'Ya puedes acceder al sistema con tu nueva contraseña.',
