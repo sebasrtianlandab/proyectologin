@@ -5,13 +5,7 @@ import { Badge } from '../../ui/badge';
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
 import { Textarea } from '../../ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '../../ui/dialog';
+import { ErpModal } from '../../ui/ErpModal';
 import {
   Select,
   SelectContent,
@@ -29,7 +23,7 @@ import {
 } from '../../../../mocks/api';
 import type { Service, Category, Technology, ModuleTemplate } from '../../../../domain/sales/types';
 import type { ServiceWithDetails } from '../../../../mocks/dataSales';
-import { Pencil, Package, Cpu } from 'lucide-react';
+import { Pencil, Package, Cpu, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../ui/utils';
 
@@ -67,7 +61,7 @@ export function ServiciosTab() {
   }, []);
 
   useEffect(() => {
-    if (!editOpen || !editingServiceId) return;
+    if (!editingServiceId) return;
     mockGetServiceWithDetails(editingServiceId).then((d) => {
       if (d) {
         setDetail(d);
@@ -77,16 +71,16 @@ export function ServiciosTab() {
         setFormTechnologyIds(d.technology_ids);
         setFormBenefitIds(d.benefit_ids);
         setFormModuleIds(d.modules.map((m) => m.module_template_id));
+        setEditOpen(true);
       } else {
         setDetail(null);
-        setEditOpen(false);
+        setEditingServiceId(null);
       }
     });
-  }, [editOpen, editingServiceId]);
+  }, [editingServiceId]);
 
   const openEdit = (serviceId: string) => {
     setEditingServiceId(serviceId);
-    setEditOpen(true);
   };
 
   const closeEdit = () => {
@@ -171,18 +165,22 @@ export function ServiciosTab() {
         </div>
       )}
 
-      <Dialog open={editOpen} onOpenChange={(open) => !open && closeEdit()}>
-        <DialogContent
-          style={{ width: 'min(48rem, 94vw)', maxWidth: '48rem' }}
-          className="flex flex-col bg-gray-100/95 text-gray-900 border-gray-200 max-h-[88vh] rounded-3xl shadow-2xl shadow-viision-900/10 p-0 overflow-hidden"
-        >
-          <DialogHeader className="flex-shrink-0 px-5 pt-4 pb-2 border-b border-gray-100 bg-gray-100/95">
-            <DialogTitle className="text-gray-900 font-bold text-lg uppercase tracking-wide">
-              Editar servicio
-            </DialogTitle>
-          </DialogHeader>
-          {detail && (
-            <div className="editar-servicio-modal flex-1 min-h-0 overflow-y-auto px-5 py-3">
+      <ErpModal
+        open={editOpen}
+        onClose={closeEdit}
+        contentClassName="flex flex-col bg-gray-100/95 text-gray-900 border-gray-200 max-h-[88vh] w-[min(48rem,94vw)] max-w-[48rem] rounded-3xl shadow-2xl shadow-viision-900/10 p-0 overflow-hidden"
+        overlayClassName="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      >
+        <div className="flex-shrink-0 flex items-center justify-between px-5 pt-4 pb-2 border-b border-gray-100 bg-gray-100/95">
+          <h2 className="text-gray-900 font-bold text-lg uppercase tracking-wide">
+            Editar servicio
+          </h2>
+          <button type="button" onClick={closeEdit} className="p-2 hover:bg-gray-200 rounded-lg transition-colors" aria-label="Cerrar">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+        {detail && (
+          <div className="editar-servicio-modal flex-1 min-h-0 overflow-y-auto px-5 py-3">
             <div className="space-y-3">
               <Card className="border-gray-100 rounded-xl card-glow shadow-sm bg-white gap-2">
                 <CardHeader className="pb-0 pt-3 px-4">
@@ -260,23 +258,22 @@ export function ServiciosTab() {
                 </CardContent>
               </Card>
             </div>
-            </div>
-          )}
-          <DialogFooter className="flex-shrink-0 gap-2 pt-3 pb-4 px-5 border-t border-gray-100 bg-gray-100/95">
-            <Button type="button" variant="outline" onClick={closeEdit} className="border-gray-200">
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={saving || !formName.trim()}
-              className="bg-viision-600 hover:bg-viision-700 text-white rounded-lg shadow-sm"
-            >
-              {saving ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+        <div className="flex-shrink-0 gap-2 pt-3 pb-4 px-5 border-t border-gray-100 bg-gray-100/95 flex flex-wrap justify-end">
+          <Button type="button" variant="outline" onClick={closeEdit} className="border-gray-200">
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleSave}
+            disabled={saving || !formName.trim()}
+          >
+            {saving ? 'Guardando...' : 'Guardar cambios'}
+          </Button>
+        </div>
+      </ErpModal>
     </>
   );
 }

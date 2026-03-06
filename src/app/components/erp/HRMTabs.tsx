@@ -1,13 +1,8 @@
 import { NavLink } from 'react-router';
-
-const tabs = [
-    { path: '/crm/rrhh', label: 'Personal', end: true },
-    { path: '/crm/rrhh/desempeno', label: 'Desempeño', end: false },
-    { path: '/crm/rrhh/objetivos', label: 'Objetivos', end: false },
-    { path: '/crm/rrhh/auditoria', label: 'Auditoría', end: false },
-];
+import { getRRHHTabs } from '../../config/nav';
 
 export function HRMTabs() {
+    const tabs = getRRHHTabs();
     return (
         <div className="border-b border-gray-200 mb-6">
             <div className="flex gap-6">

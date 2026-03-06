@@ -3,22 +3,11 @@ import { useNavigate, useLocation } from 'react-router';
 import { AuthController } from '../../../controllers/AuthController';
 import { AuthService } from '../../../models/AuthService';
 import { toast } from 'sonner';
-import {
-    LayoutDashboard, Users, ShieldCheck, BarChart3, LogOut,
-    ChevronDown, ChevronRight, Menu, X, Bell, Settings,
-    ShoppingCart
-} from 'lucide-react';
+import { LogOut, ChevronDown, ChevronRight, Menu, X, Bell, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShinyText } from '../ui/ShinyText';
 import { shouldAnimateSidebar as getShouldAnimateSidebar, markSidebarShown } from './sidebarState';
-
-interface NavItem {
-    label: string;
-    icon: React.ElementType;
-    path: string;
-    children?: { label: string; path: string; roles?: string[] }[];
-    roles?: string[];
-}
+import { navGroups } from '../../config/nav';
 
 const SIDEBAR_EXPANDED_KEY = 'erp-sidebar-expanded';
 
@@ -34,54 +23,6 @@ function getStoredExpanded(): string[] {
     }
     return ['/ventas', '/crm/rrhh'];
 }
-
-const navGroups: { group: string; items: NavItem[] }[] = [
-    {
-        group: 'PANEL',
-        items: [
-            { label: 'Inicio', icon: LayoutDashboard, path: '/dashboard', roles: ['admin', 'user'] },
-        ]
-    },
-    {
-        group: 'OPERACIONES',
-        items: [
-            {
-                label: 'Ventas', icon: ShoppingCart, path: '/ventas', roles: ['admin', 'user'], children: [
-                    { label: 'Cotizaciones', path: '/ventas/cotizaciones' },
-                    { label: 'Monitoreo', path: '/ventas/monitoreo' },
-                    { label: 'Servicios', path: '/ventas/servicios' },
-                ]
-            },
-            // { label: 'DevOps', icon: Terminal, path: '/devops', roles: ['admin', 'user'] },
-        ]
-    },
-    {
-        group: 'RECURSOS HUMANOS',
-        items: [
-            {
-                label: 'RRHH', icon: Users, path: '/crm/rrhh', roles: ['admin'], children: [
-                    { label: 'Personal', path: '/crm/rrhh' },
-                    { label: 'Desempeño', path: '/crm/rrhh/desempeno' },
-                    { label: 'Objetivos', path: '/crm/rrhh/objetivos' },
-                    { label: 'Auditoría RRHH', path: '/crm/rrhh/auditoria' },
-                ]
-            }
-        ]
-    },
-    {
-        group: 'GESTIÓN INTERNA',
-        items: [
-            { label: 'Gestión Interna', icon: ShieldCheck, path: '/gestion-interna', roles: ['admin'] },
-        ]
-    },
-    {
-        group: 'SISTEMA Y SEGURIDAD',
-        items: [
-            { label: 'Analítica Web', icon: BarChart3, path: '/analytics', roles: ['admin'] },
-            { label: 'Auditoría', icon: ShieldCheck, path: '/audit', roles: ['admin'] },
-        ]
-    },
-];
 
 
 interface ERPLayoutProps {

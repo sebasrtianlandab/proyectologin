@@ -1,18 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { ErpSearchInput } from '../ui/ErpSearchInput';
 import { ExportTableButton } from '../ui/ExportTableButton';
+import { StatCard } from '../ui/StatCard';
+import { Button } from '../ui/button';
+import { ErpDataTable } from '../ui/ErpDataTable';
+import { AddEmployeeModal } from './AddEmployeeModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
 import {
-    UserPlus, X, User, Mail, Phone, Briefcase,
-    Building, Calendar, CheckCircle2, Filter, RefreshCw,
-    Users, GraduationCap, Code2, ShieldCheck, HeadphonesIcon, Trash2
+    User, UserPlus, Filter, RefreshCw,
+    Users, GraduationCap, ShieldCheck, HeadphonesIcon, Trash2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 
-import { mockGetEmployees, mockCreateEmployeeApi, mockDeleteEmployeeApi } from '../../../mocks/api';
+import { useFilteredList } from '../../hooks/useFilteredList';
+import { mockGetEmployees, mockDeleteEmployeeApi } from '../../../mocks/api';
 
 interface Employee {
     id: string;
@@ -29,25 +33,22 @@ interface Employee {
     mustChangePassword?: boolean;
 }
 
-const EMPLOYEE_TYPES = ['Instructor', 'Desarrollador', 'Administrador', 'Asist. Administrativo'];
-const DEPARTMENTS = ['Desarrollo', 'Docente', 'Administrativo', 'Soporte', 'Dirección'];
+const EMPLOYEE_TYPES = ['Instructor', 'Administrador', 'Asist. Administrativo'];
+const DEPARTMENTS = ['Docente', 'Administrativo', 'Dirección'];
 const POSITIONS: Record<string, string[]> = {
     'Instructor': ['Instructor Senior', 'Instructor Junior', 'Coordinador de Contenidos'],
-    'Desarrollador': ['Frontend Developer', 'Backend Developer', 'Fullstack Developer', 'DevOps'],
     'Administrador': ['Gerente General', 'Jefe de RRHH', 'Coordinador Admin'],
     'Asist. Administrativo': ['Asistente RRHH', 'Asistente Financiero', 'Recepcionista'],
 };
 
 const typeIcons: Record<string, React.ElementType> = {
     'Instructor': GraduationCap,
-    'Desarrollador': Code2,
     'Administrador': ShieldCheck,
     'Asist. Administrativo': HeadphonesIcon,
 };
 
 const typeColors: Record<string, string> = {
     'Instructor': 'bg-viision-100 text-viision-700',
-    'Desarrollador': 'bg-viision-100 text-viision-700',
     'Administrador': 'bg-viision-100 text-viision-700',
     'Asist. Administrativo': 'bg-viision-100 text-viision-700',
 };
@@ -56,17 +57,9 @@ export function HRMView() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
     const [viewMode, setViewMode] = useState<'gallery' | 'table'>('gallery');
-    const [saving, setSaving] = useState(false);
-
-    const [form, setForm] = useState({
-        name: '', email: '', phone: '',
-        employeeType: 'Instructor', department: 'Docente',
-        position: '', hireDate: '', status: 'Activo',
-    });
 
     const loadEmployees = async () => {
         setLoading(true);
@@ -81,30 +74,6 @@ export function HRMView() {
     };
 
     useEffect(() => { loadEmployees(); }, []);
-
-    const handleAddEmployee = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!form.name || !form.email) return;
-        setSaving(true);
-        try {
-            const data = await mockCreateEmployeeApi(form);
-            if (data.success) {
-                toast.success(`✅ Empleado registrado exitosamente`, {
-                    description: `Se ha enviado una clave de acceso temporal al correo ${form.email}. El empleado deberá cambiarla en su primer inicio de sesión.`,
-                    duration: 6000,
-                });
-                setShowModal(false);
-                setForm({ name: '', email: '', phone: '', employeeType: 'Instructor', department: 'Docente', position: '', hireDate: '', status: 'Activo' });
-                loadEmployees();
-            } else {
-                toast.error(data.message || 'Error al registrar empleado');
-            }
-        } catch {
-            toast.error('Error de conexión con el servidor');
-        } finally {
-            setSaving(false);
-        }
-    };
 
     const handleDeleteEmployee = async (id: string) => {
         if (!confirm('¿Estás seguro de que deseas eliminar este empleado? Esta acción no se puede deshacer y también eliminará su usuario asociado.')) return;
@@ -122,12 +91,13 @@ export function HRMView() {
         }
     };
 
-    const filtered = employees.filter(e => {
+    const employeeFilter = useCallback((e: Employee, search: string) => {
         const matchSearch = search === '' || e.name.toLowerCase().includes(search.toLowerCase()) || e.email.toLowerCase().includes(search.toLowerCase());
         const matchType = filterType === 'all' || e.employeeType === filterType;
         const matchStatus = filterStatus === 'all' || e.status === filterStatus;
         return matchSearch && matchType && matchStatus;
-    });
+    }, [filterType, filterStatus]);
+    const { filtered, search, setSearch } = useFilteredList(employees, employeeFilter);
 
     const rrhhExportColumns = useMemo<{ key: string; label: string; format?: (value: unknown, row: Employee) => string }[]>(
         () => [
@@ -162,35 +132,18 @@ export function HRMView() {
                         disabled={filtered.length === 0}
                         buttonLabel="Exportar"
                     />
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-viision-600 text-white rounded-lg hover:bg-viision-700 transition-colors shadow-sm"
-                    >
+                    <Button variant="primary" onClick={() => setShowModal(true)}>
                         <UserPlus className="w-4 h-4" /> Agregar Empleado
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-                {[
-                    { label: 'Total Personal', value: employees.length, icon: Users, sub: 'Empleados registrados' },
-                    { label: 'Instructores', value: countByType('Instructor'), icon: GraduationCap, sub: 'Equipo docente' },
-                    { label: 'Desarrolladores', value: countByType('Desarrollador'), icon: Code2, sub: 'Equipo técnico' },
-                    { label: 'Administradores', value: countByType('Administrador'), icon: ShieldCheck, sub: 'Personal administrativo' },
-                    { label: 'Asist. Admin.', value: countByType('Asist. Administrativo'), icon: HeadphonesIcon, sub: 'Personal de soporte' },
-                ].map(stat => (
-                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-                                <p className="text-xs font-medium text-gray-500 mt-1">{stat.label}</p>
-                                <p className="text-[10px] text-gray-400">{stat.sub}</p>
-                            </div>
-                            <stat.icon className="w-6 h-6 text-gray-300" />
-                        </div>
-                    </div>
-                ))}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <StatCard label="Total Personal" sub="Empleados registrados" value={employees.length} icon={Users} layout="valueFirst" iconClassName="w-6 h-6 text-gray-300" labelClassName="font-medium" />
+                <StatCard label="Instructores" sub="Equipo docente" value={countByType('Instructor')} icon={GraduationCap} layout="valueFirst" iconClassName="w-6 h-6 text-gray-300" labelClassName="font-medium" />
+                <StatCard label="Administradores" sub="Personal administrativo" value={countByType('Administrador')} icon={ShieldCheck} layout="valueFirst" iconClassName="w-6 h-6 text-gray-300" labelClassName="font-medium" />
+                <StatCard label="Asist. Admin." sub="Personal de soporte" value={countByType('Asist. Administrativo')} icon={HeadphonesIcon} layout="valueFirst" iconClassName="w-6 h-6 text-gray-300" labelClassName="font-medium" />
             </div>
 
             {/* View tabs */}
@@ -294,258 +247,68 @@ export function HRMView() {
                     })}
                 </div>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden card-glow">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                {['Empleado', 'Tipo', 'Departamento', 'Puesto', 'Fecha Alta', 'Estado', ''].map(h => (
-                                    <th key={h} className={`px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider ${h === '' ? 'text-right' : ''}`}>{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {filtered.map(emp => {
-                                const badgeColor = typeColors[emp.employeeType] || 'bg-gray-100 text-gray-700';
-                                return (
-                                    <tr key={emp.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-viision-100 rounded-full flex items-center justify-center">
-                                                    <span className="text-xs font-bold text-viision-600">{emp.name.charAt(0)}</span>
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-gray-800">{emp.name}</p>
-                                                    <p className="text-xs text-gray-400">{emp.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${badgeColor}`}>{emp.employeeType}</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">{emp.department}</td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">{emp.position || '—'}</td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">
-                                            {emp.hireDate ? new Date(emp.hireDate).toLocaleDateString('es-ES') : '—'}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {emp.mustChangePassword ? (
-                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-                                                    Clave Temporal
-                                                </span>
-                                            ) : (
-                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${emp.status === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {emp.status}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-right">
-                                            <button
-                                                onClick={() => handleDeleteEmployee(emp.id)}
-                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Eliminar Empleado"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                <ErpDataTable<Employee>
+                    keyExtractor={(emp) => emp.id}
+                    data={filtered}
+                    columns={[
+                        {
+                            id: 'empleado',
+                            label: 'Empleado',
+                            render: (emp) => (
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-viision-100 rounded-full flex items-center justify-center">
+                                        <span className="text-xs font-bold text-viision-600">{emp.name.charAt(0)}</span>
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-gray-800">{emp.name}</p>
+                                        <p className="text-xs text-gray-400">{emp.email}</p>
+                                    </div>
+                                </div>
+                            ),
+                        },
+                        {
+                            id: 'tipo',
+                            label: 'Tipo',
+                            render: (emp) => (
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${typeColors[emp.employeeType] || 'bg-gray-100 text-gray-700'}`}>
+                                    {emp.employeeType}
+                                </span>
+                            ),
+                        },
+                        { id: 'departamento', label: 'Departamento', render: (emp) => <span className="text-xs text-gray-500">{emp.department}</span> },
+                        { id: 'puesto', label: 'Puesto', render: (emp) => <span className="text-xs text-gray-500">{emp.position || '—'}</span> },
+                        {
+                            id: 'fecha',
+                            label: 'Fecha Alta',
+                            render: (emp) => <span className="text-xs text-gray-500">{emp.hireDate ? new Date(emp.hireDate).toLocaleDateString('es-ES') : '—'}</span>,
+                        },
+                        {
+                            id: 'estado',
+                            label: 'Estado',
+                            render: (emp) =>
+                                emp.mustChangePassword ? (
+                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">Clave Temporal</span>
+                                ) : (
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${emp.status === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {emp.status}
+                                    </span>
+                                ),
+                        },
+                    ]}
+                    renderRowActions={(emp) => (
+                        <button
+                            onClick={() => handleDeleteEmployee(emp.id)}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Eliminar Empleado"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
+                    emptyMessage="No hay empleados que coincidan con los filtros."
+                />
             )}
 
-            {/* Modal: Agregar Empleado */}
-            <AnimatePresence>
-                {showModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
-                        onClick={e => e.target === e.currentTarget && setShowModal(false)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto card-glow"
-                        >
-                            <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                                <div>
-                                    <h2 className="text-lg font-bold text-gray-800">Agregar Nuevo Empleado</h2>
-                                </div>
-                                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                                    <X className="w-5 h-5 text-gray-500" />
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleAddEmployee} className="p-6 space-y-5">
-                                {/* Información del Usuario */}
-                                <div>
-                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">
-                                        Información del Usuario
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="col-span-2 sm:col-span-1">
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Nombre Completo *</label>
-                                            <div className="relative">
-                                                <User className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    required
-                                                    placeholder="Ej. Juan Pérez García"
-                                                    value={form.name}
-                                                    onChange={e => setForm({ ...form, name: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="col-span-2 sm:col-span-1">
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Correo Electrónico *</label>
-                                            <div className="relative">
-                                                <Mail className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    required type="email"
-                                                    placeholder="juan.perez@empresa.com"
-                                                    value={form.email}
-                                                    onChange={e => setForm({ ...form, email: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Teléfono</label>
-                                            <div className="relative">
-                                                <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    placeholder="+51 999 999 999"
-                                                    value={form.phone}
-                                                    onChange={e => setForm({ ...form, phone: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Información Laboral */}
-                                <div>
-                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">
-                                        Información Laboral
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Tipo de Empleado *</label>
-                                            <div className="relative">
-                                                <Briefcase className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
-                                                <Select
-                                                    value={form.employeeType}
-                                                    onValueChange={v => setForm({ ...form, employeeType: v, position: '' })}
-                                                >
-                                                    <SelectTrigger className="w-full pl-9">
-                                                        <SelectValue placeholder="Tipo" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {EMPLOYEE_TYPES.map(t => (
-                                                            <SelectItem key={t} value={t}>{t}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Departamento</label>
-                                            <div className="relative">
-                                                <Building className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
-                                                <Select value={form.department} onValueChange={v => setForm({ ...form, department: v })}>
-                                                    <SelectTrigger className="w-full pl-9">
-                                                        <SelectValue placeholder="Departamento" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {DEPARTMENTS.map(d => (
-                                                            <SelectItem key={d} value={d}>{d}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Puesto / Posición</label>
-                                            <Select
-                                                value={form.position || '__none__'}
-                                                onValueChange={v => setForm({ ...form, position: v === '__none__' ? '' : v })}
-                                            >
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Seleccionar puesto" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="__none__">Seleccionar puesto</SelectItem>
-                                                    {(POSITIONS[form.employeeType] || []).map(p => (
-                                                        <SelectItem key={p} value={p}>{p}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Fecha de Contratación</label>
-                                            <div className="relative">
-                                                <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                                <input
-                                                    type="date"
-                                                    value={form.hireDate}
-                                                    onChange={e => setForm({ ...form, hireDate: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-medium text-gray-600 mb-1 block">Estado *</label>
-                                            <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="Activo">Activo</SelectItem>
-                                                    <SelectItem value="Inactivo">Inactivo</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Info clave temporal */}
-                                <div className="bg-viision-50 border border-viision-100 rounded-lg p-3 flex gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-viision-500 mt-0.5 shrink-0" />
-                                    <p className="text-xs text-viision-600">
-                                        Se generará automáticamente una <strong>clave temporal</strong> y se enviará al correo del empleado. En su primer acceso, deberá cambiarla obligatoriamente.
-                                    </p>
-                                </div>
-
-                                <div className="flex gap-3 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowModal(false)}
-                                        className="flex-1 px-4 py-2.5 text-sm border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={saving}
-                                        className="flex-1 px-4 py-2.5 text-sm bg-viision-600 text-white rounded-lg hover:bg-viision-700 transition-colors font-medium disabled:opacity-60 flex items-center justify-center gap-2"
-                                    >
-                                        {saving ? (
-                                            <><RefreshCw className="w-4 h-4 animate-spin" /> Procesando...</>
-                                        ) : (
-                                            <><UserPlus className="w-4 h-4" /> Agregar Empleado</>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <AddEmployeeModal open={showModal} onClose={() => setShowModal(false)} onSuccess={loadEmployees} />
         </ERPLayout>
     );
 }

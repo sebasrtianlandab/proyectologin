@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { Target, User, CheckCircle2, Circle, RefreshCw } from 'lucide-react';
-
+import { StatCard } from '../ui/StatCard';
 import { mockGetEmployees } from '../../../mocks/api';
 
 interface Objetivo {
@@ -83,34 +83,8 @@ export function HRMObjetivosView() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-viision-50">
-                            <Target className="w-5 h-5 text-viision-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">
-                                {objetivosPorEmpleado.reduce((s, e) => s + e.objetivos.length, 0)}
-                            </p>
-                            <p className="text-xs text-gray-500">Objetivos totales</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-green-50">
-                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">
-                                {objetivosPorEmpleado.reduce((s, e) =>
-                                    s + e.objetivos.filter(o => o.cumplido).length, 0
-                                )}
-                            </p>
-                            <p className="text-xs text-gray-500">Objetivos cumplidos</p>
-                        </div>
-                    </div>
-                </div>
+                <StatCard layout="iconFirst" value={objetivosPorEmpleado.reduce((s, e) => s + e.objetivos.length, 0)} label="Objetivos totales" icon={Target} iconWrapperClassName="p-2 rounded-lg bg-viision-50" iconClassName="w-5 h-5 text-viision-600" />
+                <StatCard layout="iconFirst" value={objetivosPorEmpleado.reduce((s, e) => s + e.objetivos.filter(o => o.cumplido).length, 0)} label="Objetivos cumplidos" icon={CheckCircle2} iconWrapperClassName="p-2 rounded-lg bg-green-50" iconClassName="w-5 h-5 text-green-600" />
             </div>
 
             {loading ? (

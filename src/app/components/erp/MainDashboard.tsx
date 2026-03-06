@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { AuthService } from '../../../models/AuthService';
 import { useNavigate } from 'react-router';
-import {
-    Eye, Users, Activity, ShieldCheck, UserPlus,
-    ArrowUpRight, Clock, Zap, ShoppingCart, BarChart3, Building2
-} from 'lucide-react';
+import { Eye, Users, Activity, ShieldCheck, ArrowUpRight, Clock, Zap } from 'lucide-react';
+import { getQuickAccessItems } from '../../config/nav';
 import { motion } from 'motion/react';
 import { mockGetAnalyticsSummary, mockGetAudit, mockGetUsersCount, mockTrackAnalytics } from '../../../mocks/api';
 
@@ -65,14 +63,10 @@ export function MainDashboard() {
     };
 
     const quickAccessColor = 'text-viision-600 bg-viision-50';
-    // Jerarquizado: operaciones → RRHH → gestión → sistema. Sin módulos retirados (ej. DevOps).
-    const quickAccess = [
-        { label: 'Ventas', path: '/ventas/cotizaciones', icon: ShoppingCart, color: quickAccessColor, roles: ['admin', 'user'] },
-        { label: 'Recursos Humanos', path: '/crm/rrhh', icon: UserPlus, color: quickAccessColor, roles: ['admin'] },
-        { label: 'Gestión Interna', path: '/gestion-interna', icon: Building2, color: quickAccessColor, roles: ['admin'] },
-        { label: 'Analítica Web', path: '/analytics', icon: BarChart3, color: quickAccessColor, roles: ['admin'] },
-        { label: 'Auditoría', path: '/audit', icon: ShieldCheck, color: quickAccessColor, roles: ['admin'] },
-    ].filter(item => !item.roles || (session?.role && item.roles.includes(session.role)));
+    const quickAccess = getQuickAccessItems(session?.role).map((item) => ({
+        ...item,
+        color: quickAccessColor,
+    }));
 
     return (
         <ERPLayout title="Inicio" subtitle="Resumen general del sistema">

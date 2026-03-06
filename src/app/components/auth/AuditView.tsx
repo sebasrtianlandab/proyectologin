@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
     ShieldCheck, User, CheckCircle2, XCircle, RefreshCw,
     AlertCircle, Activity, Trash2
@@ -7,34 +7,34 @@ import { toast } from 'sonner';
 import { ERPLayout } from '../layout/ERPLayout';
 import { ErpSearchInput } from '../ui/ErpSearchInput';
 import { ExportTableButton } from '../ui/ExportTableButton';
+import { StatCard } from '../ui/StatCard';
+import { ErpDataTable } from '../ui/ErpDataTable';
+import { useAsyncData } from '../../hooks/useAsyncData';
+import { useFilteredList } from '../../hooks/useFilteredList';
 import { mockGetAudit } from '../../../mocks/api';
 
-export const AuditView: React.FC = () => {
-    const [audits, setAudits] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
+type AuditRow = { id: string; timestamp?: string; action?: string; email?: string; ip?: string; user_agent?: string; userAgent?: string };
 
+export const AuditView: React.FC = () => {
     const fetchAudits = async () => {
-        setLoading(true);
-        try {
-            const data = await mockGetAudit();
-            if (data.success) {
-                setAudits(data.audits);
-            } else {
-                toast.error('No se pudo cargar la auditoría');
-            }
-        } catch {
-            toast.error('Error de conexión con el servidor');
-        } finally {
-            setLoading(false);
+        const data = await mockGetAudit();
+        if (!data.success) {
+            toast.error('No se pudo cargar la auditoría');
+            throw new Error('Audit load failed');
         }
+        return data.audits;
     };
+    const { data: auditsData, loading, error, refetch } = useAsyncData(fetchAudits, []);
+    const audits = auditsData ?? [];
 
     useEffect(() => {
-        fetchAudits();
-        const interval = setInterval(fetchAudits, 30000);
+        if (error) toast.error('Error de conexión con el servidor');
+    }, [error]);
+
+    useEffect(() => {
+        const interval = setInterval(refetch, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [refetch]);
 
     const ACTION_LABELS: Record<string, string> = {
         'OTP_VERIFIED_SUCCESS': 'OTP Verificado',
@@ -74,12 +74,12 @@ export const AuditView: React.FC = () => {
     const failedCount = audits.filter(a => a.action === 'LOGIN_FAILED').length;
     const registeredCount = audits.filter(a => ['USER_REGISTERED', 'EMPLOYEE_REGISTERED'].includes(a.action)).length;
 
-    const filtered = audits.filter(a =>
-        search === '' ||
-        a.email?.toLowerCase().includes(search.toLowerCase()) ||
-        a.action?.toLowerCase().includes(search.toLowerCase()) ||
-        a.ip?.includes(search)
-    );
+    const auditFilter = useCallback((a: { email?: string; action?: string; ip?: string }, q: string) =>
+        q === '' ||
+        (a.email?.toLowerCase().includes(q.toLowerCase()) ?? false) ||
+        (a.action?.toLowerCase().includes(q.toLowerCase()) ?? false) ||
+        (a.ip?.includes(q) ?? false), []);
+    const { filtered, search, setSearch } = useFilteredList(audits, auditFilter);
 
     const auditExportColumns = useMemo(
         () => [
@@ -104,7 +104,7 @@ export const AuditView: React.FC = () => {
                         <span className="text-xs font-semibold text-green-700">Live · Auto-refresh 30s</span>
                     </div>
                     <button
-                        onClick={fetchAudits}
+                        onClick={refetch}
                         disabled={loading}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
                     >
@@ -123,23 +123,9 @@ export const AuditView: React.FC = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-                {[
-                    { label: 'Accesos Exitosos', value: successCount, color: 'text-green-600 bg-green-50', icon: CheckCircle2 },
-                    { label: 'Intentos Fallidos', value: failedCount, color: 'text-red-600 bg-red-50', icon: XCircle },
-                    { label: 'Registros', value: registeredCount, color: 'text-viision-600 bg-viision-50', icon: User },
-                ].map(stat => (
-                    <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm card-glow">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-                                <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-                            </div>
-                            <div className={`p-2 rounded-lg ${stat.color}`}>
-                                <stat.icon className="w-4 h-4" />
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                <StatCard label="Accesos Exitosos" value={successCount} icon={CheckCircle2} layout="valueFirst" iconWrapperClassName="p-2 rounded-lg text-green-600 bg-green-50" iconClassName="w-4 h-4" />
+                <StatCard label="Intentos Fallidos" value={failedCount} icon={XCircle} layout="valueFirst" iconWrapperClassName="p-2 rounded-lg text-red-600 bg-red-50" iconClassName="w-4 h-4" />
+                <StatCard label="Registros" value={registeredCount} icon={User} layout="valueFirst" iconWrapperClassName="p-2 rounded-lg text-viision-600 bg-viision-50" iconClassName="w-4 h-4" />
             </div>
 
             {/* Search */}
@@ -153,57 +139,44 @@ export const AuditView: React.FC = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden card-glow">
-                <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-viision-600" />
-                    <h3 className="text-sm font-bold text-gray-700">Registro de Eventos</h3>
-                    <span className="ml-auto text-xs text-gray-400">{filtered.length} eventos</span>
-                </div>
-                {loading ? (
-                    <div className="text-center py-16 text-gray-400 text-sm">Cargando registros...</div>
-                ) : filtered.length === 0 ? (
+            <ErpDataTable<AuditRow>
+                keyExtractor={(a) => a.id}
+                data={filtered}
+                loading={loading}
+                loadingMessage="Cargando registros..."
+                title={
+                    <>
+                        <ShieldCheck className="w-4 h-4 text-viision-600" />
+                        <h3 className="text-sm font-bold text-gray-700">Registro de Eventos</h3>
+                    </>
+                }
+                titleRight={`${filtered.length} eventos`}
+                emptyState={
                     <div className="text-center py-16 text-gray-400">
                         <Activity className="w-10 h-10 mx-auto mb-2 text-gray-200" />
                         <p className="text-sm">No hay registros de auditoría</p>
                     </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    {['Fecha y Hora', 'Acción', 'Usuario', 'IP', 'Agente'].map(h => (
-                                        <th key={h} className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {filtered.map((audit) => (
-                                    <tr key={audit.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                                            {new Date(audit.timestamp).toLocaleString('es-ES', {
-                                                day: '2-digit', month: '2-digit', year: 'numeric',
-                                                hour: '2-digit', minute: '2-digit', second: '2-digit'
-                                            })}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {getActionBadge(audit.action)}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs font-medium text-gray-700">
-                                            {audit.email}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-400 font-mono">
-                                            {audit.ip || '—'}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-400 max-w-48 truncate">
-                                            {(audit.user_agent || audit.userAgent)?.split(' ')[0] || '—'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
+                }
+                columns={[
+                    {
+                        id: 'timestamp',
+                        label: 'Fecha y Hora',
+                        render: (a) => (
+                            <span className="text-xs text-gray-500 whitespace-nowrap">
+                                {a.timestamp ? new Date(a.timestamp).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
+                            </span>
+                        ),
+                    },
+                    { id: 'action', label: 'Acción', render: (a) => getActionBadge(a.action ?? '') },
+                    { id: 'email', label: 'Usuario', render: (a) => <span className="text-xs font-medium text-gray-700">{a.email}</span> },
+                    { id: 'ip', label: 'IP', render: (a) => <span className="text-xs text-gray-400 font-mono">{a.ip || '—'}</span> },
+                    {
+                        id: 'agent',
+                        label: 'Agente',
+                        render: (a) => <span className="text-xs text-gray-400 max-w-48 truncate block">{(a.user_agent || a.userAgent)?.split(' ')[0] || '—'}</span>,
+                    },
+                ]}
+            />
         </ERPLayout>
     );
 };
