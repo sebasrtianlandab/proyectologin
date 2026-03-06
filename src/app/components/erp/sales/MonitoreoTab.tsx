@@ -33,7 +33,9 @@ const STATUS_CHART_LABELS: Record<string, string> = {
   perdida: 'Canceladas',
 };
 
-const CHART_COLORS = ['#6164ff', '#3413fc', '#22c55e', '#64748b'];
+const CHART_COLORS = ['#6164ff', '#3413fc', '#d1fae5', '#64748b'];
+const CHART_FONT = { fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", fontSize: 13 };
+const CHART_LABEL_FILL = '#111827';
 
 export function MonitoreoTab() {
   const [summary, setSummary] = useState<EventsSummary | null>(null);
@@ -138,9 +140,9 @@ export function MonitoreoTab() {
                 { name: STATUS_CHART_LABELS.perdida, value: counts.perdida ?? 0 },
               ].filter((d) => d.value > 0);
               return (
-              <div className="h-[260px] w-full">
+              <div className="h-[260px] w-full overflow-visible">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 24, right: 24, bottom: 24, left: 24 }}>
                     <Pie
                       data={pieData.length ? pieData : [{ name: 'Sin datos', value: 1 }]}
                       cx="50%"
@@ -150,17 +152,34 @@ export function MonitoreoTab() {
                       paddingAngle={2}
                       dataKey="value"
                       nameKey="name"
-                      label={pieData.length ? ({ name, value }) => `${name}: ${value}` : false}
+                      label={pieData.length ? (props: { name: string; value: number; cx: number; cy: number; midAngle: number; outerRadius: number }) => {
+                        const { name, value, cx, cy, midAngle, outerRadius } = props;
+                        const R = outerRadius + 36;
+                        const x = cx + R * Math.cos(-midAngle * (Math.PI / 180));
+                        const y = cy + R * Math.sin(-midAngle * (Math.PI / 180));
+                        return (
+                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fill={CHART_LABEL_FILL} style={{ ...CHART_FONT, fontWeight: 500 }}>
+                            {name}: {value}
+                          </text>
+                        );
+                      } : false}
                     >
                       {(pieData.length ? pieData : [{ name: 'Sin datos', value: 1 }]).map((_, i) => (
                         <Cell key={i} fill={pieData.length ? CHART_COLORS[i % CHART_COLORS.length] : '#e2e8f0'} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: '1px solid rgb(229 231 235)' }}
+                      contentStyle={{ borderRadius: '8px', border: '1px solid rgb(229 231 235)', ...CHART_FONT }}
                       formatter={(value: number) => [value, 'Cotizaciones']}
                     />
-                    {pieData.length > 0 && <Legend />}
+                    {pieData.length > 0 && (
+                      <Legend
+                        wrapperStyle={CHART_FONT}
+                        iconSize={12}
+                        iconType="square"
+                        formatter={(value) => <span style={{ color: CHART_LABEL_FILL }}>{value}</span>}
+                      />
+                    )}
                   </PieChart>
                 </ResponsiveContainer>
               </div>

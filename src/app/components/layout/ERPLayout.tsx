@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
     LayoutDashboard, Users, ShieldCheck, BarChart3, LogOut,
     ChevronDown, ChevronRight, Menu, X, Bell, Settings,
-    ShoppingCart, Terminal
+    ShoppingCart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShinyText } from '../ui/ShinyText';
@@ -20,6 +20,21 @@ interface NavItem {
     roles?: string[];
 }
 
+const SIDEBAR_EXPANDED_KEY = 'erp-sidebar-expanded';
+
+function getStoredExpanded(): string[] {
+    try {
+        const s = sessionStorage.getItem(SIDEBAR_EXPANDED_KEY);
+        if (s) {
+            const a = JSON.parse(s);
+            if (Array.isArray(a) && a.every((x: unknown) => typeof x === 'string')) return a;
+        }
+    } catch {
+        // ignore
+    }
+    return ['/ventas', '/crm/rrhh'];
+}
+
 const navGroups: { group: string; items: NavItem[] }[] = [
     {
         group: 'PANEL',
@@ -30,8 +45,14 @@ const navGroups: { group: string; items: NavItem[] }[] = [
     {
         group: 'OPERACIONES',
         items: [
-            { label: 'Ventas', icon: ShoppingCart, path: '/ventas', roles: ['admin', 'user'] },
-            { label: 'DevOps', icon: Terminal, path: '/devops', roles: ['admin', 'user'] },
+            {
+                label: 'Ventas', icon: ShoppingCart, path: '/ventas', roles: ['admin', 'user'], children: [
+                    { label: 'Cotizaciones', path: '/ventas/cotizaciones' },
+                    { label: 'Monitoreo', path: '/ventas/monitoreo' },
+                    { label: 'Servicios', path: '/ventas/servicios' },
+                ]
+            },
+            // { label: 'DevOps', icon: Terminal, path: '/devops', roles: ['admin', 'user'] },
         ]
     },
     {
@@ -74,15 +95,23 @@ export function ERPLayout({ children, title, subtitle }: ERPLayoutProps) {
     const location = useLocation();
     const session = AuthService.getSession();
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [expanded, setExpanded] = useState<string[]>(['/crm/rrhh']);
+    const [expanded, setExpanded] = useState<string[]>(getStoredExpanded);
     const shouldAnimateSidebar = getShouldAnimateSidebar();
+
     useEffect(() => {
         if (sidebarOpen) markSidebarShown();
     }, [sidebarOpen]);
-    // Abrir el grupo del menú cuando la ruta actual es una vista hija
+
+    // Persistir estado del sidebar para que no se reinicie al cambiar de vista
+    useEffect(() => {
+        sessionStorage.setItem(SIDEBAR_EXPANDED_KEY, JSON.stringify(expanded));
+    }, [expanded]);
+
+    // Abrir solo el grupo de la ruta actual si estamos dentro de él (no forzar los demás)
     useEffect(() => {
         const path = location.pathname;
         if (path.startsWith('/crm/rrhh')) setExpanded(prev => prev.includes('/crm/rrhh') ? prev : [...prev, '/crm/rrhh']);
+        if (path.startsWith('/ventas')) setExpanded(prev => prev.includes('/ventas') ? prev : [...prev, '/ventas']);
     }, [location.pathname]);
 
     const handleLogout = () => {

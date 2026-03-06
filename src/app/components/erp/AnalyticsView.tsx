@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Eye, Activity, Users, TrendingUp, RefreshCw, Monitor, Smartphone, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -63,15 +64,16 @@ export function AnalyticsView() {
                     <button onClick={load} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     </button>
-                    <select
-                        value={period}
-                        onChange={e => setPeriod(e.target.value)}
-                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none bg-white text-gray-600"
-                    >
-                        <option value="7">Últimos 7 días</option>
-                        <option value="14">Últimos 14 días</option>
-                        <option value="30">Últimos 30 días</option>
-                    </select>
+                    <Select value={period} onValueChange={setPeriod}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="7">Últimos 7 días</SelectItem>
+                            <SelectItem value="14">Últimos 14 días</SelectItem>
+                            <SelectItem value="30">Últimos 30 días</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 

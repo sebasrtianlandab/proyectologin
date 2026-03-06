@@ -3,7 +3,7 @@
  * Especificación C.2 y C.3.
  */
 
-import type { ModuleTemplate, Category, Technology, BenefitTemplate, Service, Quote, QuoteModule, Event } from '../domain/sales/types';
+import type { ModuleTemplate, Category, Technology, BenefitTemplate, Service, ServiceModule, ServiceTechnology, ServiceBenefit, Quote, QuoteModule, Event } from '../domain/sales/types';
 
 export const seedCategories: Category[] = [
   { id: 'cat_1', name: 'Gestión Empresarial' },
@@ -52,6 +52,47 @@ export const seedServices: Service[] = [
   { id: 'srv_crm', code: 'crm', name: 'CRM de Ventas', short_description: 'Gestiona tus relaciones con clientes de manera efectiva.', category_id: 'cat_2', created_at: created, updated_at: now },
   { id: 'srv_ecommerce', code: 'ecommerce', name: 'E-commerce', short_description: 'Tienda online con catálogo, carrito y checkout.', category_id: 'cat_3', created_at: created, updated_at: now },
   { id: 'srv_bi', code: 'bi', name: 'BI y Reportes', short_description: 'Dashboards y reportes gerenciales.', category_id: 'cat_4', created_at: created, updated_at: now },
+];
+
+export const seedServiceModules: ServiceModule[] = [
+  { service_id: 'srv_erp', module_template_id: 'mod_financiero', sort_order: 1 },
+  { service_id: 'srv_erp', module_template_id: 'mod_inventarios', sort_order: 2 },
+  { service_id: 'srv_erp', module_template_id: 'mod_rrhh', sort_order: 3 },
+  { service_id: 'srv_erp', module_template_id: 'mod_compras', sort_order: 4 },
+  { service_id: 'srv_erp', module_template_id: 'mod_ventas_crm', sort_order: 5 },
+  { service_id: 'srv_erp', module_template_id: 'mod_facturacion', sort_order: 6 },
+  { service_id: 'srv_erp', module_template_id: 'mod_logistica', sort_order: 7 },
+  { service_id: 'srv_erp', module_template_id: 'mod_bi', sort_order: 8 },
+  { service_id: 'srv_crm', module_template_id: 'mod_ventas_crm', sort_order: 1 },
+  { service_id: 'srv_crm', module_template_id: 'mod_bi', sort_order: 2 },
+  { service_id: 'srv_crm', module_template_id: 'mod_facturacion', sort_order: 3 },
+  { service_id: 'srv_ecommerce', module_template_id: 'mod_ecommerce', sort_order: 1 },
+  { service_id: 'srv_ecommerce', module_template_id: 'mod_inventarios', sort_order: 2 },
+  { service_id: 'srv_ecommerce', module_template_id: 'mod_facturacion', sort_order: 3 },
+  { service_id: 'srv_ecommerce', module_template_id: 'mod_bi', sort_order: 4 },
+  { service_id: 'srv_bi', module_template_id: 'mod_bi', sort_order: 1 },
+];
+
+export const seedServiceTechnologies: ServiceTechnology[] = [
+  { service_id: 'srv_erp', technology_id: 'tech_1', sort_order: 1 },
+  { service_id: 'srv_erp', technology_id: 'tech_2', sort_order: 2 },
+  { service_id: 'srv_erp', technology_id: 'tech_3', sort_order: 3 },
+  { service_id: 'srv_crm', technology_id: 'tech_1', sort_order: 1 },
+  { service_id: 'srv_crm', technology_id: 'tech_4', sort_order: 2 },
+  { service_id: 'srv_ecommerce', technology_id: 'tech_1', sort_order: 1 },
+  { service_id: 'srv_ecommerce', technology_id: 'tech_5', sort_order: 2 },
+  { service_id: 'srv_bi', technology_id: 'tech_6', sort_order: 1 },
+  { service_id: 'srv_bi', technology_id: 'tech_4', sort_order: 2 },
+];
+
+export const seedServiceBenefits: ServiceBenefit[] = [
+  { service_id: 'srv_erp', benefit_template_id: 'ben_1', sort_order: 1 },
+  { service_id: 'srv_erp', benefit_template_id: 'ben_2', sort_order: 2 },
+  { service_id: 'srv_erp', benefit_template_id: 'ben_3', sort_order: 3 },
+  { service_id: 'srv_crm', benefit_template_id: 'ben_5', sort_order: 1 },
+  { service_id: 'srv_crm', benefit_template_id: 'ben_6', sort_order: 2 },
+  { service_id: 'srv_ecommerce', benefit_template_id: 'ben_2', sort_order: 1 },
+  { service_id: 'srv_bi', benefit_template_id: 'ben_4', sort_order: 1 },
 ];
 
 export const seedQuotes: Quote[] = [

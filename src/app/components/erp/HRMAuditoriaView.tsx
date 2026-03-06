@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { ShieldCheck, User, RefreshCw, Activity } from 'lucide-react';
-
+import { ExportTableButton } from '../ui/ExportTableButton';
 import { mockGetAudit } from '../../../mocks/api';
 
 const HR_ACTIONS = ['EMPLOYEE_REGISTERED', 'PASSWORD_CHANGED', 'USER_REGISTERED', 'EMPLOYEE_DELETED'];
@@ -37,15 +37,35 @@ export function HRMAuditoriaView() {
 
     useEffect(() => { load(); }, []);
 
+    const exportColumns = useMemo(
+        () => [
+            { key: 'timestamp', label: 'Fecha y hora', format: (v: unknown) => (v ? new Date(v as string).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—') },
+            { key: 'action', label: 'Acción', format: (v: unknown) => actionLabels[v as string] || (v as string) },
+            { key: 'email', label: 'Usuario' },
+            { key: 'ip', label: 'IP', format: (v: unknown) => (v as string) || '—' },
+        ],
+        []
+    );
+
     return (
         <ERPLayout title="Recursos Humanos" subtitle="Auditoría de acciones de RRHH">
             <HRMTabs />
 
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-800">Auditoría de Recursos Humanos</h2>
-                <button onClick={load} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                </button>
+                <div className="flex items-center gap-2">
+                    <ExportTableButton
+                        columns={exportColumns}
+                        data={audits}
+                        filenamePrefix="auditoria-rrhh"
+                        formats={['csv', 'pdf']}
+                        disabled={audits.length === 0}
+                        buttonLabel="Exportar"
+                    />
+                    <button onClick={load} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

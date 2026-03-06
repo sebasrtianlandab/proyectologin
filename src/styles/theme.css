@@ -293,3 +293,44 @@
     0 6px 20px -2px rgba(52, 19, 252, 0.18),
     0 12px 32px -4px rgba(52, 19, 252, 0.12);
 }
+
+/* Scrollbar sutil para modal Editar servicio: pequeña, se pierde en degradado, no llega a las esquinas */
+.editar-servicio-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 200, 200, 0.4) transparent;
+}
+.editar-servicio-modal::-webkit-scrollbar {
+  width: 4px;
+}
+.editar-servicio-modal::-webkit-scrollbar-track {
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    transparent 18%,
+    rgba(0,0,0,0.03) 22%,
+    rgba(0,0,0,0.03) 78%,
+    transparent 82%,
+    transparent 100%
+  );
+  border-radius: 9999px;
+  margin: 12px 0;
+}
+.editar-servicio-modal::-webkit-scrollbar-thumb {
+  background: rgba(200, 200, 200, 0.4);
+  border-radius: 9999px;
+}
+.editar-servicio-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(210, 210, 210, 0.55);
+}
+.editar-servicio-modal::-webkit-scrollbar-thumb:active {
+  background: rgba(220, 220, 220, 0.6);
+}
+
+/* Animación suave para modales (Dialog): solo fade, sin zoom */
+[data-slot="dialog-overlay"] {
+  animation-duration: 280ms !important;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-slot="dialog-content"] {
+  animation-duration: 280ms !important;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}

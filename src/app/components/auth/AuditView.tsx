@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ShieldCheck, User, CheckCircle2, XCircle, RefreshCw,
-    AlertCircle, Search, Activity, Download, Trash2
+    AlertCircle, Activity, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ERPLayout } from '../layout/ERPLayout';
+import { ErpSearchInput } from '../ui/ErpSearchInput';
+import { ExportTableButton } from '../ui/ExportTableButton';
 import { mockGetAudit } from '../../../mocks/api';
 
 export const AuditView: React.FC = () => {
@@ -33,6 +35,19 @@ export const AuditView: React.FC = () => {
         const interval = setInterval(fetchAudits, 30000);
         return () => clearInterval(interval);
     }, []);
+
+    const ACTION_LABELS: Record<string, string> = {
+        'OTP_VERIFIED_SUCCESS': 'OTP Verificado',
+        'LOGIN_SUCCESS_DIRECT': 'Acceso Directo',
+        'LOGIN_FAILED': 'Intento Fallido',
+        'USER_REGISTERED': 'Registro Usuario',
+        'EMPLOYEE_REGISTERED': 'Alta Empleado',
+        'PASSWORD_CHANGED': 'Cambio Contraseña',
+        'EMPLOYEE_DELETED': 'Baja Empleado',
+        'LOGIN_ATTEMPT_SUCCESS_WAITING_OTP': 'Esperando OTP',
+    };
+
+    const getActionLabel = (action: string) => ACTION_LABELS[action] ?? action;
 
     const getActionBadge = (action: string) => {
         const map: Record<string, { label: string; color: string; icon: React.ElementType }> = {
@@ -66,6 +81,18 @@ export const AuditView: React.FC = () => {
         a.ip?.includes(search)
     );
 
+    const auditExportColumns = useMemo(
+        () => [
+            { key: 'timestamp', label: 'Fecha y Hora', format: (v: unknown) => v ? new Date(v as string).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—' },
+            { key: 'action', label: 'Acción', format: (v: unknown) => getActionLabel(v as string) },
+            { key: 'email', label: 'Usuario' },
+            { key: 'ip', label: 'IP', format: (v: unknown) => (v as string) || '—' },
+            { key: 'userAgent', label: 'Agente', format: (v: unknown) => ((v as string) || '—').split(' ')[0] || '—' },
+        ],
+        []
+    );
+    const auditExportData = useMemo(() => filtered.map(a => ({ ...a, userAgent: a.user_agent || a.userAgent })), [filtered]);
+
     return (
         <ERPLayout title="Auditoría" subtitle="Registro de eventos y seguridad del sistema">
             {/* Header row */}
@@ -83,9 +110,14 @@ export const AuditView: React.FC = () => {
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     </button>
-                    <button className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50">
-                        <Download className="w-4 h-4" /> Exportar CSV
-                    </button>
+                    <ExportTableButton
+                        columns={auditExportColumns}
+                        data={auditExportData}
+                        filenamePrefix="auditoria"
+                        formats={['csv', 'pdf']}
+                        disabled={filtered.length === 0}
+                        buttonLabel="Exportar"
+                    />
                 </div>
             </div>
 
@@ -112,15 +144,12 @@ export const AuditView: React.FC = () => {
 
             {/* Search */}
             <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm card-glow">
-                <div className="relative max-w-sm">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                    <input
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder="Buscar por email, acción o IP..."
-                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20"
-                    />
-                </div>
+                <ErpSearchInput
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Buscar por email, acción o IP..."
+                    className="max-w-sm"
+                />
             </div>
 
             {/* Table */}

@@ -16,8 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../ui/select';
-import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
+import { DatePickerField } from '../../ui/DatePickerField';
 import { Textarea } from '../../ui/textarea';
 import {
   Sheet,
@@ -28,7 +28,7 @@ import {
 import { mockGetQuotes, mockGetQuoteById, mockUpdateQuoteStatus, mockGetServices } from '../../../../mocks/api';
 import type { Quote, QuoteStatus } from '../../../../domain/sales/types';
 import { KpiCard } from './KpiCard';
-import { Eye, RefreshCw, Pencil, FileText, BarChart3, CalendarIcon, User, Package, Layers, ClipboardList } from 'lucide-react';
+import { Eye, RefreshCw, Pencil, FileText, BarChart3, User, Package, Layers, ClipboardList } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../ui/utils';
 
@@ -124,7 +124,7 @@ export function CotizacionesTab() {
           </div>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Select value={filterService} onValueChange={setFilterService}>
-              <SelectTrigger className="w-[200px] h-9">
+              <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Servicio" />
               </SelectTrigger>
               <SelectContent>
@@ -135,7 +135,7 @@ export function CotizacionesTab() {
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[160px] h-9">
+              <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -147,27 +147,21 @@ export function CotizacionesTab() {
             </Select>
             <div className="flex items-center gap-2">
               <Label className="text-xs text-gray-500 whitespace-nowrap">Desde</Label>
-              <div className="relative flex items-center w-[140px]">
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={e => setDateFrom(e.target.value)}
-                  className="h-9 w-full pl-3 pr-8 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                />
-                <CalendarIcon className="absolute right-2.5 w-4 h-4 text-gray-400 pointer-events-none shrink-0" />
-              </div>
+              <DatePickerField
+                value={dateFrom}
+                onChange={setDateFrom}
+                placeholder="dd/mm/aaaa"
+                triggerClassName="w-[160px]"
+              />
             </div>
             <div className="flex items-center gap-2">
               <Label className="text-xs text-gray-500 whitespace-nowrap">Hasta</Label>
-              <div className="relative flex items-center w-[140px]">
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={e => setDateTo(e.target.value)}
-                  className="h-9 w-full pl-3 pr-8 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                />
-                <CalendarIcon className="absolute right-2.5 w-4 h-4 text-gray-400 pointer-events-none shrink-0" />
-              </div>
+              <DatePickerField
+                value={dateTo}
+                onChange={setDateTo}
+                placeholder="dd/mm/aaaa"
+                triggerClassName="w-[160px]"
+              />
             </div>
           </div>
         </CardHeader>
@@ -288,7 +282,7 @@ export function CotizacionesTab() {
                   <div>
                     <Label className="text-gray-700 text-xs">Estado</Label>
                     <Select value={editingStatus ?? selectedQuote.status} onValueChange={v => setEditingStatus(v as QuoteStatus)}>
-                      <SelectTrigger className="mt-1 bg-gray-50 border-gray-200 text-gray-900"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {(Object.keys(STATUS_LABELS) as QuoteStatus[]).map(s => (
                           <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>

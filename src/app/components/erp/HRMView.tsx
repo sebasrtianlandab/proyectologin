@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
+import { ErpSearchInput } from '../ui/ErpSearchInput';
+import { ExportTableButton } from '../ui/ExportTableButton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
 import {
-    UserPlus, Search, X, User, Mail, Phone, Briefcase,
-    Building, Calendar, CheckCircle2, Filter, Download, RefreshCw,
+    UserPlus, X, User, Mail, Phone, Briefcase,
+    Building, Calendar, CheckCircle2, Filter, RefreshCw,
     Users, GraduationCap, Code2, ShieldCheck, HeadphonesIcon, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -54,8 +57,8 @@ export function HRMView() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [search, setSearch] = useState('');
-    const [filterType, setFilterType] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
+    const [filterType, setFilterType] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all');
     const [viewMode, setViewMode] = useState<'gallery' | 'table'>('gallery');
     const [saving, setSaving] = useState(false);
 
@@ -121,10 +124,22 @@ export function HRMView() {
 
     const filtered = employees.filter(e => {
         const matchSearch = search === '' || e.name.toLowerCase().includes(search.toLowerCase()) || e.email.toLowerCase().includes(search.toLowerCase());
-        const matchType = filterType === '' || e.employeeType === filterType;
-        const matchStatus = filterStatus === '' || e.status === filterStatus;
+        const matchType = filterType === 'all' || e.employeeType === filterType;
+        const matchStatus = filterStatus === 'all' || e.status === filterStatus;
         return matchSearch && matchType && matchStatus;
     });
+
+    const rrhhExportColumns = useMemo<{ key: string; label: string; format?: (value: unknown, row: Employee) => string }[]>(
+        () => [
+            { key: 'name', label: 'Empleado', format: (_v, row) => `${row.name} - ${row.email}` },
+            { key: 'employeeType', label: 'Tipo' },
+            { key: 'department', label: 'Departamento' },
+            { key: 'position', label: 'Puesto', format: (v) => (v as string) || '—' },
+            { key: 'hireDate', label: 'Fecha Alta', format: (v) => (v ? new Date(v as string).toLocaleDateString('es-ES') : '—') },
+            { key: 'status', label: 'Estado', format: (v, row) => row.mustChangePassword ? 'Clave Temporal' : ((v as string) || '—') },
+        ],
+        []
+    );
 
     const countByType = (type: string) => employees.filter(e => e.employeeType === type).length;
 
@@ -139,9 +154,14 @@ export function HRMView() {
                     <p className="text-xs text-gray-400 mt-0.5">Gestión de personal y empleados</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Download className="w-4 h-4" /> Exportar
-                    </button>
+                    <ExportTableButton
+                        columns={rrhhExportColumns}
+                        data={filtered}
+                        filenamePrefix="personal-rrhh"
+                        formats={['csv', 'pdf']}
+                        disabled={filtered.length === 0}
+                        buttonLabel="Exportar"
+                    />
                     <button
                         onClick={() => setShowModal(true)}
                         className="flex items-center gap-2 px-4 py-2 text-sm bg-viision-600 text-white rounded-lg hover:bg-viision-700 transition-colors shadow-sm"
@@ -194,32 +214,33 @@ export function HRMView() {
             {/* Search & Filters */}
             <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm mb-4 card-glow">
                 <div className="flex flex-wrap gap-3">
-                    <div className="relative flex-1 min-w-48">
-                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                        <input
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            placeholder="Buscar por nombre, email o puesto..."
-                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 focus:border-viision-400"
-                        />
-                    </div>
-                    <select
-                        value={filterType}
-                        onChange={e => setFilterType(e.target.value)}
-                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 text-gray-600"
-                    >
-                        <option value="">Todos los tipos</option>
-                        {EMPLOYEE_TYPES.map(t => <option key={t}>{t}</option>)}
-                    </select>
-                    <select
-                        value={filterStatus}
-                        onChange={e => setFilterStatus(e.target.value)}
-                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-viision-500/20 text-gray-600"
-                    >
-                        <option value="">Todos los estados</option>
-                        <option>Activo</option>
-                        <option>Inactivo</option>
-                    </select>
+                    <ErpSearchInput
+                        value={search}
+                        onChange={setSearch}
+                        placeholder="Buscar por nombre, email o puesto..."
+                        className="flex-1 min-w-48"
+                    />
+                    <Select value={filterType} onValueChange={setFilterType}>
+                        <SelectTrigger className="w-[160px]">
+                            <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos los tipos</SelectItem>
+                            {EMPLOYEE_TYPES.map(t => (
+                                <SelectItem key={t} value={t}>{t}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos los estados</SelectItem>
+                            <SelectItem value="Activo">Activo</SelectItem>
+                            <SelectItem value="Inactivo">Inactivo</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -416,40 +437,54 @@ export function HRMView() {
                                         <div>
                                             <label className="text-xs font-medium text-gray-600 mb-1 block">Tipo de Empleado *</label>
                                             <div className="relative">
-                                                <Briefcase className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                                <select
-                                                    required
+                                                <Briefcase className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
+                                                <Select
                                                     value={form.employeeType}
-                                                    onChange={e => setForm({ ...form, employeeType: e.target.value, position: '' })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
+                                                    onValueChange={v => setForm({ ...form, employeeType: v, position: '' })}
                                                 >
-                                                    {EMPLOYEE_TYPES.map(t => <option key={t}>{t}</option>)}
-                                                </select>
+                                                    <SelectTrigger className="w-full pl-9">
+                                                        <SelectValue placeholder="Tipo" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {EMPLOYEE_TYPES.map(t => (
+                                                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
                                         <div>
                                             <label className="text-xs font-medium text-gray-600 mb-1 block">Departamento</label>
                                             <div className="relative">
-                                                <Building className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                                <select
-                                                    value={form.department}
-                                                    onChange={e => setForm({ ...form, department: e.target.value })}
-                                                    className="w-full pl-9 pr-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
-                                                >
-                                                    {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
-                                                </select>
+                                                <Building className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
+                                                <Select value={form.department} onValueChange={v => setForm({ ...form, department: v })}>
+                                                    <SelectTrigger className="w-full pl-9">
+                                                        <SelectValue placeholder="Departamento" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {DEPARTMENTS.map(d => (
+                                                            <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
                                         <div>
                                             <label className="text-xs font-medium text-gray-600 mb-1 block">Puesto / Posición</label>
-                                            <select
-                                                value={form.position}
-                                                onChange={e => setForm({ ...form, position: e.target.value })}
-                                                className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
+                                            <Select
+                                                value={form.position || '__none__'}
+                                                onValueChange={v => setForm({ ...form, position: v === '__none__' ? '' : v })}
                                             >
-                                                <option value="">Seleccionar puesto</option>
-                                                {(POSITIONS[form.employeeType] || []).map(p => <option key={p}>{p}</option>)}
-                                            </select>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Seleccionar puesto" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="__none__">Seleccionar puesto</SelectItem>
+                                                    {(POSITIONS[form.employeeType] || []).map(p => (
+                                                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div>
                                             <label className="text-xs font-medium text-gray-600 mb-1 block">Fecha de Contratación</label>
@@ -465,14 +500,15 @@ export function HRMView() {
                                         </div>
                                         <div>
                                             <label className="text-xs font-medium text-gray-600 mb-1 block">Estado *</label>
-                                            <select
-                                                value={form.status}
-                                                onChange={e => setForm({ ...form, status: e.target.value })}
-                                                className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none appearance-none bg-white"
-                                            >
-                                                <option>Activo</option>
-                                                <option>Inactivo</option>
-                                            </select>
+                                            <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Activo">Activo</SelectItem>
+                                                    <SelectItem value="Inactivo">Inactivo</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
                                 </div>

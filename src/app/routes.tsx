@@ -110,11 +110,35 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/devops',
+    path: '/ventas/cotizaciones',
     element: (
       <ProtectedRoute>
-        <DevOpsView />
+        <SalesView />
       </ProtectedRoute>
     ),
   },
+  {
+    path: '/ventas/monitoreo',
+    element: (
+      <ProtectedRoute>
+        <SalesView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ventas/servicios',
+    element: (
+      <ProtectedRoute>
+        <SalesView />
+      </ProtectedRoute>
+    ),
+  },
+  // {
+  //   path: '/devops',
+  //   element: (
+  //     <ProtectedRoute>
+  //       <DevOpsView />
+  //     </ProtectedRoute>
+  //   ),
+  // },
 ]);

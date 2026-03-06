@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
+import { ExportTableButton } from '../ui/ExportTableButton';
 import { TrendingUp, User, Calendar, Star, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -42,15 +43,36 @@ export function HRMDesempenoView() {
         ultimaRevision: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
     }));
 
+    const exportColumns = useMemo(
+        () => [
+            { key: 'employeeName', label: 'Empleado' },
+            { key: 'periodo', label: 'Período' },
+            { key: 'calificacion', label: 'Calificación', format: (v: unknown) => (v as number).toFixed(1) },
+            { key: 'estado', label: 'Estado' },
+            { key: 'ultimaRevision', label: 'Última revisión' },
+        ],
+        []
+    );
+
     return (
         <ERPLayout title="Recursos Humanos" subtitle="Desempeño y evaluaciones">
             <HRMTabs />
 
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-800">Evaluaciones de Desempeño</h2>
-                <button onClick={load} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                </button>
+                <div className="flex items-center gap-2">
+                    <ExportTableButton
+                        columns={exportColumns}
+                        data={evaluaciones}
+                        filenamePrefix="evaluaciones-desempeno"
+                        formats={['csv', 'pdf']}
+                        disabled={evaluaciones.length === 0}
+                        buttonLabel="Exportar"
+                    />
+                    <button onClick={load} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

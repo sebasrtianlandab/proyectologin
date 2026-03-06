@@ -3,8 +3,8 @@ import { ERPLayout } from '../layout/ERPLayout';
 import { AuthService } from '../../../models/AuthService';
 import { useNavigate } from 'react-router';
 import {
-    Eye, Users, Activity, TrendingUp, ShieldCheck, UserPlus,
-    ArrowUpRight, Clock, Zap
+    Eye, Users, Activity, ShieldCheck, UserPlus,
+    ArrowUpRight, Clock, Zap, ShoppingCart, BarChart3, Building2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { mockGetAnalyticsSummary, mockGetAudit, mockGetUsersCount, mockTrackAnalytics } from '../../../mocks/api';
@@ -54,21 +54,24 @@ export function MainDashboard() {
 
     const getActionLabel = (action: string) => {
         const map: Record<string, { label: string; color: string }> = {
-            'LOGIN_SUCCESS_DIRECT': { label: 'Acceso Directo', color: 'bg-green-100 text-green-700' },
-            'LOGIN_FAILED': { label: 'Acceso Fallido', color: 'bg-red-100 text-red-700' },
-            'USER_REGISTERED': { label: 'Registro', color: 'bg-viision-100 text-viision-700' },
-            'OTP_VERIFIED_SUCCESS': { label: 'OTP Verificado', color: 'bg-green-100 text-green-700' },
+            'LOGIN_SUCCESS_DIRECT': { label: 'Acceso Directo', color: 'bg-green-100 text-green-800' },
+            'LOGIN_FAILED': { label: 'Acceso Fallido', color: 'bg-red-100 text-red-800' },
+            'USER_REGISTERED': { label: 'Registro', color: 'bg-viision-100 text-viision-800' },
+            'OTP_VERIFIED_SUCCESS': { label: 'OTP Verificado', color: 'bg-green-100 text-green-800' },
+            'EMPLOYEE_REGISTERED': { label: 'Alta empleado', color: 'bg-viision-100 text-viision-800' },
+            'PASSWORD_CHANGED': { label: 'Cambio contraseña', color: 'bg-viision-100 text-viision-800' },
         };
-        return map[action] || { label: action, color: 'bg-gray-100 text-gray-700' };
+        return map[action] || { label: action, color: 'bg-gray-100 text-gray-800' };
     };
 
     const quickAccessColor = 'text-viision-600 bg-viision-50';
+    // Jerarquizado: operaciones → RRHH → gestión → sistema. Sin módulos retirados (ej. DevOps).
     const quickAccess = [
+        { label: 'Ventas', path: '/ventas/cotizaciones', icon: ShoppingCart, color: quickAccessColor, roles: ['admin', 'user'] },
         { label: 'Recursos Humanos', path: '/crm/rrhh', icon: UserPlus, color: quickAccessColor, roles: ['admin'] },
-        { label: 'Analítica Web', path: '/analytics', icon: TrendingUp, color: quickAccessColor, roles: ['admin'] },
+        { label: 'Gestión Interna', path: '/gestion-interna', icon: Building2, color: quickAccessColor, roles: ['admin'] },
+        { label: 'Analítica Web', path: '/analytics', icon: BarChart3, color: quickAccessColor, roles: ['admin'] },
         { label: 'Auditoría', path: '/audit', icon: ShieldCheck, color: quickAccessColor, roles: ['admin'] },
-        { label: 'Ventas', path: '/ventas', icon: Zap, color: quickAccessColor, roles: ['admin', 'user'] },
-        { label: 'DevOps', icon: Zap, path: '/devops', color: quickAccessColor, roles: ['admin', 'user'] },
     ].filter(item => !item.roles || (session?.role && item.roles.includes(session.role)));
 
     return (

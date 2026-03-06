@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { Target, User, CheckCircle2, Circle, RefreshCw } from 'lucide-react';
 
 import { mockGetEmployees } from '../../../mocks/api';
+
+interface Objetivo {
+    id: string;
+    titulo: string;
+    cumplido: boolean;
+}
 
 interface Employee {
     id: string;
@@ -13,9 +19,17 @@ interface Employee {
     department: string;
 }
 
+const OBJETIVOS_BASE: Omit<Objetivo, 'cumplido'>[] = [
+    { id: '1', titulo: 'Completar certificación del área' },
+    { id: '2', titulo: 'Cumplir metas de productividad' },
+    { id: '3', titulo: 'Participar en al menos 2 formaciones' },
+];
+
 export function HRMObjetivosView() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
+    // employeeId -> objetivoId -> cumplido (persistido en estado local)
+    const [cumplidoByKey, setCumplidoByKey] = useState<Record<string, boolean>>({});
 
     const load = async () => {
         setLoading(true);
@@ -29,17 +43,33 @@ export function HRMObjetivosView() {
 
     useEffect(() => { load(); }, []);
 
-    // Objetivos por empleado (API /api/objectives)
-    const objetivosPorEmpleado = employees.map(emp => ({
-        employeeId: emp.id,
-        employeeName: emp.name,
-        objetivos: [
-            { id: '1', titulo: 'Completar certificación del área', cumplido: Math.random() > 0.5 },
-            { id: '2', titulo: 'Cumplir metas de productividad', cumplido: Math.random() > 0.4 },
-            { id: '3', titulo: 'Participar en al menos 2 formaciones', cumplido: Math.random() > 0.6 },
-        ],
-        avance: Math.round(30 + Math.random() * 70),
-    }));
+    const toggleCumplido = (employeeId: string, objetivoId: string) => {
+        const key = `${employeeId}:${objetivoId}`;
+        setCumplidoByKey(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const getCumplido = (employeeId: string, objetivoId: string) => {
+        const key = `${employeeId}:${objetivoId}`;
+        if (key in cumplidoByKey) return cumplidoByKey[key];
+        const seed = (employeeId + objetivoId).split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 100 / 100;
+        return seed > 0.5;
+    };
+
+    // Objetivos por empleado con estado interactivo
+    const objetivosPorEmpleado = useMemo(() => employees.map(emp => {
+        const objetivos: Objetivo[] = OBJETIVOS_BASE.map(o => ({
+            ...o,
+            cumplido: getCumplido(emp.id, o.id),
+        }));
+        const cumplidos = objetivos.filter(o => o.cumplido).length;
+        const avance = objetivos.length ? Math.round((cumplidos / objetivos.length) * 100) : 0;
+        return {
+            employeeId: emp.id,
+            employeeName: emp.name,
+            objetivos,
+            avance,
+        };
+    }), [employees, cumplidoByKey]);
 
     return (
         <ERPLayout title="Recursos Humanos" subtitle="Objetivos y metas por empleado">
@@ -107,7 +137,12 @@ export function HRMObjetivosView() {
                             </div>
                             <div className="p-4 space-y-2">
                                 {emp.objetivos.map(obj => (
-                                    <div key={obj.id} className="flex items-center gap-3 text-sm">
+                                    <button
+                                        key={obj.id}
+                                        type="button"
+                                        onClick={() => toggleCumplido(emp.employeeId, obj.id)}
+                                        className="flex items-center gap-3 text-sm w-full text-left rounded-lg py-1 -my-1 hover:bg-gray-50 transition-colors"
+                                    >
                                         {obj.cumplido ? (
                                             <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
                                         ) : (
@@ -116,7 +151,7 @@ export function HRMObjetivosView() {
                                         <span className={obj.cumplido ? 'text-gray-600 line-through' : 'text-gray-800'}>
                                             {obj.titulo}
                                         </span>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </div>

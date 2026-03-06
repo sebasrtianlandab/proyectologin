@@ -21,11 +21,14 @@ import {
   getEventsSummary as getEventsSummaryData,
   getQuoteCountsByStatus as getQuoteCountsByStatusData,
   getServices as getServicesData,
+  getServiceWithDetails as getServiceWithDetailsData,
+  updateService as updateServiceData,
   getModuleTemplates as getModuleTemplatesData,
   getCategories as getCategoriesData,
   getTechnologies as getTechnologiesData,
   getBenefitTemplates as getBenefitTemplatesData,
 } from './dataSales';
+import type { ServiceWithDetails, UpdateServicePayload } from './dataSales';
 
 // --- Auth (usado por AuthService) ---
 
@@ -192,6 +195,19 @@ export function mockGetQuoteCountsByStatus(): Promise<Record<QuoteStatus, number
 
 export function mockGetServices(): Promise<Service[]> {
   return new Promise(resolve => setTimeout(() => resolve(getServicesData()), 150));
+}
+
+export function mockGetServiceWithDetails(serviceId: string): Promise<ServiceWithDetails | null> {
+  return new Promise(resolve => setTimeout(() => resolve(getServiceWithDetailsData(serviceId)), 150));
+}
+
+export function mockUpdateService(serviceId: string, payload: UpdateServicePayload): Promise<{ success: boolean }> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const ok = updateServiceData(serviceId, payload);
+      resolve({ success: ok });
+    }, 150);
+  });
 }
 
 export function mockGetModuleTemplates(): Promise<ModuleTemplate[]> {
