@@ -34,10 +34,13 @@ export function RegisterView() {
 
       if (result.success) {
         toast.success(result.message, {
-          description: 'Revisa la consola del navegador para ver el código OTP',
+          description: result.requiresOTP ? 'Revisa tu correo para el código OTP.' : 'Inicia sesión con tu email y contraseña.',
         });
-        // Navegar a verificación OTP
-        navigate('/verify-otp');
+        if (result.requiresOTP) {
+          navigate('/verify-otp');
+        } else {
+          navigate('/login');
+        }
       } else {
         toast.error(result.message);
       }

@@ -11,15 +11,18 @@ import { StatCard } from '../ui/StatCard';
 import { ErpDataTable } from '../ui/ErpDataTable';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { useFilteredList } from '../../hooks/useFilteredList';
-import { mockGetAudit } from '../../../mocks/api';
+import { getAudit } from '../../../api/client';
 
 type AuditRow = { id: string; timestamp?: string; action?: string; email?: string; ip?: string; user_agent?: string; userAgent?: string };
 
 export const AuditView: React.FC = () => {
+    const DEFAULT_AUDIT_ERROR = 'No se pudo cargar la auditoría. Comprueba que el servidor esté en marcha (puerto 3001) y VITE_API_URL en .env del ERP.';
+
     const fetchAudits = async () => {
-        const data = await mockGetAudit();
+        const data = await getAudit();
         if (!data.success) {
-            toast.error('No se pudo cargar la auditoría');
+            const msg = data.message && data.message.length > 0 ? data.message : DEFAULT_AUDIT_ERROR;
+            toast.error(msg);
             throw new Error('Audit load failed');
         }
         return data.audits;
@@ -28,7 +31,7 @@ export const AuditView: React.FC = () => {
     const audits = auditsData ?? [];
 
     useEffect(() => {
-        if (error) toast.error('Error de conexión con el servidor');
+        if (error) toast.error(DEFAULT_AUDIT_ERROR);
     }, [error]);
 
     useEffect(() => {

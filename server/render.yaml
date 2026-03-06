@@ -1,0 +1,16 @@
+# Render Blueprint (opcional). Usar solo si despliegas desde la raíz del repo y quieres apuntar a esta carpeta.
+# Lo más simple: en el dashboard, al crear el Web Service, pon Root Directory = viision-erp/server
+# y deja Build command = npm install, Start command = npm start.
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: viision-erp-api
+    runtime: node
+    rootDir: viision-erp/server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+    # En el dashboard añade: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GMAIL_USER, GMAIL_APP_PASSWORD

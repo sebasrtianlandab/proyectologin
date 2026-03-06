@@ -3,7 +3,7 @@ import { ERPLayout } from '../layout/ERPLayout';
 import { HRMTabs } from './HRMTabs';
 import { Target, User, CheckCircle2, Circle, RefreshCw } from 'lucide-react';
 import { StatCard } from '../ui/StatCard';
-import { mockGetEmployees } from '../../../mocks/api';
+import { getEmployees } from '../../../api/client';
 
 interface Objetivo {
     id: string;
@@ -34,7 +34,7 @@ export function HRMObjetivosView() {
     const load = async () => {
         setLoading(true);
         try {
-            const data = await mockGetEmployees();
+            const data = await getEmployees();
             if (data.success) setEmployees(data.employees || []);
         } finally {
             setLoading(false);

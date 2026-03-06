@@ -1,6 +1,15 @@
 /**
  * API mock: mismas formas de respuesta que el backend.
- * Todas las vistas del ERP usan esto en lugar de fetch(localhost:3001).
+ *
+ * DESACTIVADOS (la app usa api/client.ts y el backend real):
+ * - mockGetEmployees, mockDeleteEmployeeApi, mockCreateEmployeeApi → empleados
+ * - mockGetAudit → auditoría
+ * - mockGetAnalyticsSummary, mockGetUsersCount, mockTrackAnalytics → analítica y dashboard
+ * - mockChangePasswordApi → cambio de contraseña
+ *
+ * Siguen en uso (hasta conectar a API): mockRegister, mockVerifyOTP, mockGetUser (AuthService).
+ * Ventas: mockGetQuotes, mockGetServices, mockGetEventsSummary, etc.
+ * Se pueden eliminar estos mocks después de las pruebas cuando todo use el backend.
  */
 
 import {

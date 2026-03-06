@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { ErpModal } from '../ui/ErpModal';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { mockCreateEmployeeApi } from '../../../mocks/api';
+import { createEmployee } from '../../../api/client';
 
 const EMPLOYEE_TYPES = ['Instructor', 'Administrador', 'Asist. Administrativo'];
 const DEPARTMENTS = ['Docente', 'Administrativo', 'Dirección'];
@@ -40,7 +40,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
         if (!form.name || !form.email) return;
         setSaving(true);
         try {
-            const data = await mockCreateEmployeeApi(form);
+            const data = await createEmployee(form);
             if (data.success) {
                 toast.success(`✅ Empleado registrado exitosamente`, {
                     description: `Se ha enviado una clave de acceso temporal al correo ${form.email}. El empleado deberá cambiarla en su primer inicio de sesión.`,

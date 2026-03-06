@@ -19,7 +19,20 @@ if (supabase && !serviceRoleKey && anonKey) {
 }
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+// Normalizar fila de module_templates (soporta columnas code/name/description o code_varchar/name_varchar/description_text, etc.)
+function normalizeModuleTemplate(r) {
+  if (!r) return null;
+  return {
+    id: r.id,
+    code: (r.code ?? r.code_varchar ?? '').toString().trim(),
+    name: (r.name ?? r.name_varchar ?? '').toString().trim(),
+    description: (r.description ?? r.description_text ?? '').toString().trim(),
+    precio_estandar: Number(r.precio_estandar ?? r.precio_estandar_numerico ?? 0),
+    sort_order: Number(r.sort_order ?? r.sort_order_ ?? 0),
+  };
+}
 
 // Middleware
 app.use(cors());
@@ -56,18 +69,23 @@ const transporter = nodemailer.createTransport({
 
 // ==================== RUTAS USUARIOS ====================
 
-// POST /api/register - Registro de usuario (ERP). Crea en Auth + public.users; opcional OTP si existe tabla otp_codes.
+// POST /api/register - Registro de usuario desde ERP (role 'user', origin 'erp'). Opcional OTP.
 app.post('/api/register', async (req, res) => {
   try {
     if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
     const emailNorm = (email || '').trim().toLowerCase();
+    const phoneNorm = phone != null && String(phone).trim() ? String(phone).trim() : null;
     if (!name || !emailNorm || !password) {
       return res.status(400).json({ success: false, message: 'Todos los campos son requeridos' });
     }
 
-    const { data: existingUser } = await supabase.from('users').select('id').eq('email', emailNorm).single();
-    if (existingUser) return res.status(400).json({ success: false, message: 'El email ya está registrado' });
+    const { data: existingByEmail } = await supabase.from('users').select('id').eq('email', emailNorm).single();
+    if (existingByEmail) return res.status(400).json({ success: false, message: 'El correo ya está registrado' });
+    if (phoneNorm) {
+      const { data: existingByPhone } = await supabase.from('users').select('id').eq('phone', phoneNorm).maybeSingle();
+      if (existingByPhone) return res.status(400).json({ success: false, message: 'Este número de teléfono ya está registrado' });
+    }
 
     const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
       email: emailNorm,
@@ -131,20 +149,28 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// POST /api/register-client - Registro desde la Platform (landing). Crea en Auth + public.users (id FK a auth.users).
+// POST /api/register-client - Registro desde la Platform (landing). Crea en Auth + public.users.
+// Clientes = role 'client' + origin 'landing'. No hace falta tabla clientes aparte.
 app.post('/api/register-client', async (req, res) => {
   try {
     if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const { full_name, email, password, phone, company } = req.body;
     const emailNorm = (email || '').trim().toLowerCase();
+    const phoneNorm = phone != null && String(phone).trim() ? String(phone).trim() : null;
 
     if (!full_name || !emailNorm || !password) {
       return res.status(400).json({ success: false, message: 'Nombre, email y contraseña son requeridos' });
     }
 
-    const { data: existingUser } = await supabase.from('users').select('id').eq('email', emailNorm).single();
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'El email ya está registrado' });
+    const { data: existingByEmail } = await supabase.from('users').select('id').eq('email', emailNorm).single();
+    if (existingByEmail) {
+      return res.status(400).json({ success: false, message: 'El correo ya está registrado' });
+    }
+    if (phoneNorm) {
+      const { data: existingByPhone } = await supabase.from('users').select('id').eq('phone', phoneNorm).maybeSingle();
+      if (existingByPhone) {
+        return res.status(400).json({ success: false, message: 'Este número de teléfono ya está registrado' });
+      }
     }
 
     const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
@@ -174,7 +200,7 @@ app.post('/api/register-client', async (req, res) => {
       email_verified: false,
       updated_at: new Date().toISOString(),
     };
-    if (phone != null && String(phone).trim()) userPayload.phone = String(phone).trim();
+    if (phoneNorm) userPayload.phone = phoneNorm;
     if (company != null && String(company).trim()) userPayload.company = String(company).trim();
 
     const { error: userErr } = await supabase.from('users').upsert(userPayload, { onConflict: 'id' });
@@ -185,10 +211,36 @@ app.post('/api/register-client', async (req, res) => {
       }
     }
     await logAudit('USER_REGISTERED', userId, emailNorm, req);
+
+    // Verificación de email: enviar OTP por correo (mismo flujo que /api/register)
+    let requiresVerification = false;
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const { error: otpErr } = await supabase.from('otp_codes').insert([{ user_id: userId, code: otpCode, expires_at: expiresAt }]);
+    if (!otpErr && transporter) {
+      requiresVerification = true;
+      try {
+        await transporter.sendMail({
+          from: process.env.GMAIL_USER,
+          to: emailNorm,
+          subject: 'Verifica tu correo - ' + (process.env.APP_NAME || 'VIISION'),
+          html: `
+            <h2>¡Hola ${fullNameTrim}!</h2>
+            <p>Gracias por registrarte. Para activar tu cuenta, introduce este código de 6 dígitos en la página de verificación:</p>
+            <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${otpCode}</p>
+            <p style="color: #666;">El código expira en 10 minutos.</p>
+          `,
+        });
+      } catch (e) {
+        console.error('Error enviando email de verificación (register-client):', e?.message);
+      }
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Cuenta creada. Ya puedes iniciar sesión.',
+      message: requiresVerification ? 'Revisa tu correo para verificar tu cuenta.' : 'Cuenta creada. Ya puedes iniciar sesión.',
       userId,
+      requiresVerification,
     });
   } catch (error) {
     console.error('Error en register-client:', error);
@@ -319,6 +371,16 @@ app.post('/api/employees', async (req, res) => {
   try {
     if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const { name, email, phone, employeeType, department, position, hireDate, status } = req.body;
+    const emailNorm = (email || '').trim().toLowerCase();
+    const phoneNorm = phone != null && String(phone).trim() ? String(phone).trim() : null;
+
+    const { data: existingByEmail } = await supabase.from('users').select('id').eq('email', emailNorm).single();
+    if (existingByEmail) return res.status(400).json({ success: false, message: 'El correo ya está registrado' });
+    if (phoneNorm) {
+      const { data: existingByPhone } = await supabase.from('users').select('id').eq('phone', phoneNorm).maybeSingle();
+      if (existingByPhone) return res.status(400).json({ success: false, message: 'Este número de teléfono ya está registrado' });
+    }
+
     // Resolver nombres a IDs (tablas employee_types, departments, positions)
     const { data: etRows } = await supabase.from('employee_types').select('id').ilike('name', (employeeType || '').trim()).limit(1);
     const { data: deptRows } = await supabase.from('departments').select('id').ilike('name', (department || '').trim()).limit(1);
@@ -337,14 +399,14 @@ app.post('/api/employees', async (req, res) => {
     let userId;
     try {
       const { data: authUser, error: authErr } = await supabase.auth.admin.createUser({
-        email: email.trim().toLowerCase(),
+        email: emailNorm,
         password: tempPassword,
         email_confirm: true,
         user_metadata: { full_name: name },
       });
       if (authErr) {
         if (authErr.message?.includes('already been registered')) {
-          const { data: existing } = await supabase.from('users').select('id').eq('email', email.trim().toLowerCase()).single();
+          const { data: existing } = await supabase.from('users').select('id').eq('email', emailNorm).single();
           userId = existing?.id;
           if (!userId) return res.status(400).json({ success: false, message: 'El email ya está registrado' });
         } else throw authErr;
@@ -354,7 +416,7 @@ app.post('/api/employees', async (req, res) => {
     } catch (authE) {
       const msg = authE?.message || '';
       if (msg.includes('already') || msg.includes('registered')) {
-        const { data: existing } = await supabase.from('users').select('id').eq('email', email.trim().toLowerCase()).single();
+        const { data: existing } = await supabase.from('users').select('id').eq('email', emailNorm).single();
         userId = existing?.id;
         if (!userId) return res.status(400).json({ success: false, message: 'El email ya está registrado' });
       } else {
@@ -364,8 +426,8 @@ app.post('/api/employees', async (req, res) => {
     const userPayload = {
       id: userId,
       full_name: name,
-      email: email.trim().toLowerCase(),
-      phone: phone || null,
+      email: emailNorm,
+      phone: phoneNorm || null,
       role: 'employee',
       origin: 'erp',
       email_verified: true,
@@ -381,8 +443,8 @@ app.post('/api/employees', async (req, res) => {
     const { error: empError } = await supabase.from('employees').insert([{
       user_id: userId,
       name,
-      email: email.trim().toLowerCase(),
-      phone: phone || null,
+      email: emailNorm,
+      phone: phoneNorm || null,
       employee_type_id: employeeTypeId,
       department_id: departmentId,
       position_id: positionId,
@@ -420,15 +482,33 @@ app.delete('/api/employees/:id', async (req, res) => {
 // ==================== OTROS ====================
 
 app.get('/api/audit', async (req, res) => {
-  if (!supabase) return res.status(503).json({ success: false, audits: [] });
+  if (!supabase) return res.status(200).json({ success: false, audits: [], message: 'Supabase no configurado' });
   const { data, error } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100);
-  res.json({ success: !error, audits: data || [] });
+  if (error) {
+    console.error('GET /api/audit', error.message);
+    return res.status(200).json({ success: false, audits: [], message: error.message || 'Error al leer auditoría' });
+  }
+  res.json({ success: true, audits: data || [] });
 });
 
 app.get('/api/users/count', async (req, res) => {
   if (!supabase) return res.status(503).json({ success: false, count: 0 });
   const { count, error } = await supabase.from('users').select('*', { count: 'exact', head: true });
   res.json({ success: !error, count: count || 0 });
+});
+
+// GET /api/clients - Usuarios registrados en la plataforma (landing). Lista para auditoría/ventas.
+app.get('/api/clients', async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false, clients: [] });
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, full_name, email, phone, company, role, origin, email_verified, created_at')
+    .eq('role', 'client');
+  if (error) {
+    console.error('GET /api/clients error:', error.message);
+    return res.json({ success: false, clients: [] });
+  }
+  res.json({ success: true, clients: data || [] });
 });
 
 app.post('/api/change-password', async (req, res) => {
@@ -524,6 +604,7 @@ app.post('/api/quotes', async (req, res) => {
   try {
     if (!supabase) return res.status(503).json({ success: false, message: 'Servicio no configurado' });
     const body = req.body || {};
+    console.log('[QUOTES] Body recibido:', { service_code: body.service_code, service_id: body.service_id, user_id: body.user_id });
     const user_id = body.user_id;
     const service_id = body.service_id;
     const service_code = body.service_code;
@@ -537,18 +618,49 @@ app.post('/api/quotes', async (req, res) => {
     const codeParam = [service_code, service_id].find((v) => v != null && String(v).trim() && !/^[0-9a-f-]{36}$/i.test(String(v)));
     if (!resolvedServiceId && codeParam) {
       const codeStr = String(codeParam).trim().toLowerCase();
-      let { data: svc } = await supabase.from('services').select('id').eq('code', codeStr).maybeSingle();
+      let svc = null;
+      let selectError = null;
+      // --- DIAGNÓSTICO: qué recibe y qué devuelve Supabase ---
+      const { data: byCode, error: err1 } = await supabase.from('services').select('id').eq('code', codeStr).maybeSingle();
+      console.log('[QUOTES] Buscando servicio por code:', JSON.stringify(codeStr), '→ byCode:', byCode, 'error:', err1 ? err1.message : null);
+      if (err1) selectError = err1.message || err1.code;
+      else if (byCode?.id) svc = byCode;
       if (!svc?.id) {
         const res2 = await supabase.from('services').select('id').ilike('code', codeStr).limit(1).maybeSingle();
-        svc = res2.data;
+        console.log('[QUOTES] Fallback ilike →', res2.data, 'error:', res2.error?.message);
+        if (res2.error) selectError = selectError || res2.error.message;
+        else if (res2.data?.id) svc = res2.data;
+      }
+      if (!svc?.id) {
+        const { data: all, error: errAll } = await supabase.from('services').select('id, code, name');
+        const list = Array.isArray(all) ? all : [];
+        console.log('[QUOTES] Lista completa services: count=', list.length, 'filas=', list.length ? list.map((r) => ({ code: r.code, name: r.name })) : [], 'error:', errAll?.message);
+        if (errAll) selectError = selectError || errAll.message;
+        const row = list.find((r) => {
+          const c = (r.code != null ? String(r.code) : '').toLowerCase().trim();
+          const n = (r.name != null ? String(r.name) : '').toLowerCase();
+          if (codeStr === 'erp') return c === 'erp' || c === 'ers' || n.includes('erp') || n.includes('empresarial');
+          if (codeStr === 'crm') return c === 'crm' || n.includes('crm') || n.includes('ventas');
+          if (codeStr === 'ecommerce') return c === 'ecommerce' || c === 'e-commerce' || n.includes('ecommerce') || n.includes('tienda');
+          if (codeStr === 'bi') return c === 'bi' || c === 'b' || n.includes('bi ') || n.includes('reportes');
+          return c === codeStr;
+        });
+        if (row) svc = { id: row.id };
       }
       resolvedServiceId = svc?.id;
+      if (!resolvedServiceId && selectError) {
+        console.error('POST /api/quotes – Supabase services select error:', selectError);
+        return res.status(400).json({
+          success: false,
+          message: 'Error al buscar el servicio: ' + (selectError || 'revisa permisos y que la tabla services exista.'),
+        });
+      }
     }
     if (!resolvedServiceId) {
       const hint = codeParam ? ` (código enviado: "${String(codeParam).trim()}")` : '';
       return res.status(400).json({
         success: false,
-        message: 'No se encontró el servicio en la base de datos. Ejecuta en Supabase el script supabase-seed-static.sql para cargar servicios (erp, crm, etc.).' + hint,
+        message: 'No se encontró el servicio. Comprueba: 1) En Supabase, tabla public.services debe tener una fila con code = "erp". 2) El .env del backend (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY) debe ser del mismo proyecto donde ves esos datos.' + hint,
       });
     }
 
@@ -616,7 +728,7 @@ app.post('/api/quotes', async (req, res) => {
 
 /**
  * POST /api/events
- * Body: { event_type, page_path?, service_id?, session_id?, user_id?, referrer?, device_type?, metadata? }
+ * Body: { event_type, page_path?, service_id? (UUID o code: erp, crm, bi, ecommerce), session_id?, user_id?, referrer?, device_type?, metadata? }
  */
 app.post('/api/events', async (req, res) => {
   try {
@@ -627,12 +739,21 @@ app.post('/api/events', async (req, res) => {
     if (!allowed.includes(event_type)) {
       return res.status(400).json({ success: false, message: 'event_type inválido' });
     }
+    let resolvedServiceId = null;
+    if (service_id) {
+      const raw = String(service_id).trim();
+      if (/^[0-9a-f-]{36}$/i.test(raw)) resolvedServiceId = raw;
+      else {
+        const { data: svc } = await supabase.from('services').select('id').eq('code', raw.toLowerCase()).maybeSingle();
+        resolvedServiceId = svc?.id || null;
+      }
+    }
     const { error } = await supabase.from('events').insert([{
       session_id: session_id || null,
       user_id: user_id || null,
       event_type,
       page_path: page_path || null,
-      service_id: service_id || null,
+      service_id: resolvedServiceId,
       referrer: referrer || null,
       device_type: device_type || null,
       metadata: metadata || null
@@ -752,14 +873,8 @@ app.get('/api/technologies', async (req, res) => {
 app.get('/api/module-templates', async (req, res) => {
   if (!supabase) return res.status(503).json([]);
   const { data } = await supabase.from('module_templates').select('*').order('sort_order');
-  res.json((data || []).map((r) => ({
-    id: r.id,
-    code: r.code,
-    name: r.name,
-    description: r.description,
-    precio_estandar: Number(r.precio_estandar),
-    sort_order: r.sort_order ?? 0,
-  })));
+  const list = (data || []).map(normalizeModuleTemplate).filter(Boolean);
+  res.json(list);
 });
 
 app.get('/api/benefit-templates', async (req, res) => {
@@ -768,12 +883,88 @@ app.get('/api/benefit-templates', async (req, res) => {
   res.json((data || []).map((r) => ({ id: r.id, text: r.text })));
 });
 
+// ==================== DIAGNÓSTICO (solo para ver qué ve el backend en Supabase) ====================
+
+/**
+ * GET /api/debug/ping — Solo para comprobar que el servidor responde (sin Supabase).
+ * Prueba: GET http://localhost:3001/api/debug/ping
+ */
+app.get('/api/debug/ping', (req, res) => {
+  res.json({ ok: true, message: 'Servidor ERP respondiendo', timestamp: new Date().toISOString() });
+});
+
+/**
+ * GET /api/debug/services
+ * Devuelve exactamente lo que Supabase devuelve al backend (data, error, count).
+ * Prueba: GET http://localhost:3001/api/debug/services
+ */
+app.get('/api/debug/services', async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.json({ ok: false, error: 'Supabase no configurado', env: { hasUrl: !!supabaseUrl, hasServiceRole: !!serviceRoleKey, hasAnon: !!anonKey } });
+    }
+    const { data, error } = await supabase.from('services').select('id, code, name');
+    const list = Array.isArray(data) ? data : [];
+    return res.json({
+      ok: !error,
+      count: list.length,
+      data: list,
+      supabaseError: error ? { message: error.message, code: error.code, details: error.details } : null,
+      hint: !error && list.length === 0
+        ? 'La tabla services está vacía. Comprueba SUPABASE_URL y que ejecutaste supabase-seed-static.sql en ese proyecto.'
+        : null,
+      supabaseUrlHint: supabaseUrl ? supabaseUrl.replace(/https?:\/\/([^.]+).*/, '$1') : null,
+    });
+  } catch (e) {
+    console.error('GET /api/debug/services', e);
+    return res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
 // ==================== SERVICIOS ====================
 
 app.get('/api/services', async (req, res) => {
-  if (!supabase) return res.status(503).json([]);
-  const { data } = await supabase.from('services').select('id, code, name, short_description, category_id, created_at, updated_at').order('code');
-  res.json(data || []);
+  const debugQuery = (req.query.debug || req.headers['x-debug']) === '1' || (req.query.debug === '');
+  if (!supabase) {
+    if (debugQuery) return res.json({ data: [], _debug: { error: 'Supabase no configurado', env: { hasUrl: !!supabaseUrl, hasServiceRole: !!serviceRoleKey } } });
+    return res.status(503).json([]);
+  }
+  const { data, error } = await supabase.from('services').select('id, code, name, short_description, category_id, created_at, updated_at').order('code');
+  const list = Array.isArray(data) ? data : [];
+  if (debugQuery || list.length === 0) {
+    const debug = {
+      count: list.length,
+      supabaseError: error ? { message: error.message, code: error.code } : null,
+      hint: !error && list.length === 0 ? 'Tabla services vacía. Revisa .env (SUPABASE_URL + SERVICE_ROLE_KEY) y que ejecutaste supabase-seed-static.sql en ese proyecto.' : null,
+    };
+    if (list.length === 0) return res.json(debugQuery ? { data: [], _debug: debug } : []);
+    return res.json(debugQuery ? { data: list, _debug: debug } : list);
+  }
+  res.json(list);
+});
+
+// Módulos de un servicio (para el modal de cotización). :idOrCode = UUID del servicio o code (erp, crm, bi, ecommerce)
+app.get('/api/services/:idOrCode/modules', async (req, res) => {
+  try {
+    if (!supabase) return res.status(503).json([]);
+    const idOrCode = (req.params.idOrCode || '').trim();
+    let serviceId = /^[0-9a-f-]{36}$/i.test(idOrCode) ? idOrCode : null;
+    if (!serviceId) {
+      const { data: svc } = await supabase.from('services').select('id').eq('code', idOrCode.toLowerCase()).maybeSingle();
+      serviceId = svc?.id || null;
+    }
+    if (!serviceId) return res.json([]);
+    const { data: mods } = await supabase.from('service_modules').select('module_template_id, sort_order').eq('service_id', serviceId).order('sort_order');
+    const moduleIds = (mods || []).map((m) => m.module_template_id);
+    if (moduleIds.length === 0) return res.json([]);
+    const { data: templates } = await supabase.from('module_templates').select('*').in('id', moduleIds);
+    const byId = (templates || []).reduce((acc, t) => { acc[t.id] = normalizeModuleTemplate(t); return acc; }, {});
+    const list = (mods || []).map((m) => byId[m.module_template_id]).filter(Boolean);
+    res.json(list);
+  } catch (e) {
+    console.error('GET /api/services/:id/modules', e);
+    res.status(500).json([]);
+  }
 });
 
 app.get('/api/services/:id', async (req, res) => {
@@ -795,18 +986,11 @@ app.get('/api/services/:id', async (req, res) => {
     const { data: templates } = moduleIds.length
       ? await supabase.from('module_templates').select('*').in('id', moduleIds)
       : { data: [] };
-    const byId = (templates || []).reduce((acc, t) => { acc[t.id] = t; return acc; }, {});
+    const byId = (templates || []).reduce((acc, t) => { acc[t.id] = normalizeModuleTemplate(t); return acc; }, {});
     const modules = (mods || []).map((m) => ({
       module_template_id: m.module_template_id,
       sort_order: m.sort_order,
-      module: byId[m.module_template_id] ? {
-        id: byId[m.module_template_id].id,
-        code: byId[m.module_template_id].code,
-        name: byId[m.module_template_id].name,
-        description: byId[m.module_template_id].description,
-        precio_estandar: Number(byId[m.module_template_id].precio_estandar),
-        sort_order: byId[m.module_template_id].sort_order,
-      } : null,
+      module: byId[m.module_template_id] || null,
     }));
     res.json({
       ...service,
@@ -1061,16 +1245,16 @@ app.get('/api/analytics/summary', async (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`🚀 Servidor en http://localhost:${PORT}`);
+  console.log(`   Supabase: ${supabase ? 'conectado' : 'NO configurado'} | Clave: ${serviceRoleKey ? 'service_role' : anonKey ? 'anon' : 'ninguna'}`);
   if (supabase) {
     try {
-      const { data, error } = await supabase.from('users').select('id').limit(1);
+      const { data, error } = await supabase.from('services').select('id').limit(1);
       if (error) throw error;
-      console.log('✅ Supabase conectado correctamente (tabla users accesible)');
+      console.log('✅ Supabase: tabla services accesible');
     } catch (err) {
-      console.error('❌ Error conectando a Supabase:', err.message);
+      console.error('❌ Supabase:', err.message);
       if (err.message && err.message.includes('permission denied')) {
-        console.error('   → Ejecuta en Supabase el SQL de: server/supabase-fix-users-permissions.sql');
-        console.error('   → Supabase Dashboard → SQL Editor → pegar el contenido del archivo → Run.');
+        console.error('   → Usa SUPABASE_SERVICE_ROLE_KEY en .env (Supabase → Settings → API → service_role). Reinicia el servidor después de cambiar .env.');
       }
     }
   }

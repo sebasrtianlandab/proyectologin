@@ -7,7 +7,7 @@ import { ErpDataTable } from '../ui/ErpDataTable';
 import { TrendingUp, User, Calendar, Star, RefreshCw } from 'lucide-react';
 import { motion } from 'motion/react';
 
-import { mockGetEmployees } from '../../../mocks/api';
+import { getEmployees } from '../../../api/client';
 
 type EvaluacionRow = { employeeId: string; employeeName: string; periodo: string; calificacion: number; estado: string; ultimaRevision: string };
 
@@ -28,7 +28,7 @@ export function HRMDesempenoView() {
     const load = async () => {
         setLoading(true);
         try {
-            const data = await mockGetEmployees();
+            const data = await getEmployees();
             if (data.success) setEmployees(data.employees || []);
         } finally {
             setLoading(false);

@@ -5,7 +5,7 @@ import { Eye, Activity, Users, TrendingUp, RefreshCw, Monitor, Smartphone, Globe
 import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { mockGetAnalyticsSummary } from '../../../mocks/api';
+import { getAnalyticsSummary } from '../../../api/client';
 
 export function AnalyticsView() {
     const [data, setData] = useState<any>(null);
@@ -15,7 +15,7 @@ export function AnalyticsView() {
     const load = async () => {
         setLoading(true);
         try {
-            const json = await mockGetAnalyticsSummary(parseInt(period, 10) || 7);
+            const json = await getAnalyticsSummary(parseInt(period, 10) || 7);
             setData(json);
         } catch {
             setData(null);

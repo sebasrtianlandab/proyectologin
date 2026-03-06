@@ -50,6 +50,7 @@ export const navGroups: NavGroup[] = [
                 roles: ['admin', 'user'],
                 children: [
                     { label: 'Cotizaciones', path: '/ventas/cotizaciones' },
+                    { label: 'Clientes', path: '/ventas/clientes' },
                     { label: 'Monitoreo', path: '/ventas/monitoreo' },
                     { label: 'Servicios', path: '/ventas/servicios' },
                 ],

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
-import { mockGetEmployees, mockGetAudit } from '../../../mocks/api';
+import { getEmployees, getAudit } from '../../../api/client';
 
 /**
  * Vista resumen: KPIs de RRHH y accesos rápidos a Personal y Auditoría.
@@ -23,8 +23,8 @@ export function InternalManagementView() {
         setLoading(true);
         try {
             const [empData, auditData] = await Promise.all([
-                mockGetEmployees(),
-                mockGetAudit(),
+                getEmployees(),
+                getAudit(),
             ]);
             if (empData.success) setEmployees(empData.employees);
             if (auditData.success) setAudits(auditData.audits);

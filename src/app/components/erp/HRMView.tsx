@@ -16,7 +16,7 @@ import {
 import { motion } from 'motion/react';
 
 import { useFilteredList } from '../../hooks/useFilteredList';
-import { mockGetEmployees, mockDeleteEmployeeApi } from '../../../mocks/api';
+import { getEmployees, deleteEmployee } from '../../../api/client';
 
 interface Employee {
     id: string;
@@ -64,7 +64,7 @@ export function HRMView() {
     const loadEmployees = async () => {
         setLoading(true);
         try {
-            const data = await mockGetEmployees();
+            const data = await getEmployees();
             if (data.success) setEmployees(data.employees);
         } catch {
             toast.error('Error al cargar empleados');
@@ -79,7 +79,7 @@ export function HRMView() {
         if (!confirm('¿Estás seguro de que deseas eliminar este empleado? Esta acción no se puede deshacer y también eliminará su usuario asociado.')) return;
 
         try {
-            const data = await mockDeleteEmployeeApi(id);
+            const data = await deleteEmployee(id);
             if (data.success) {
                 toast.success('Empleado eliminado correctamente');
                 loadEmployees();

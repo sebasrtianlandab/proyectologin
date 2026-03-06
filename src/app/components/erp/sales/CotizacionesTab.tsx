@@ -25,7 +25,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '../../ui/sheet';
-import { mockGetQuotes, mockGetQuoteById, mockUpdateQuoteStatus, mockGetServices } from '../../../../mocks/api';
+import { getQuotes, getQuoteById, updateQuoteStatus, getServices } from '../../../../api/salesClient';
 import type { Quote, QuoteStatus } from '../../../../domain/sales/types';
 import { KpiCard } from './KpiCard';
 import { Eye, RefreshCw, Pencil, FileText, BarChart3, User, Package, Layers, ClipboardList } from 'lucide-react';
@@ -69,7 +69,7 @@ export function CotizacionesTab() {
       ...(dateFrom && { dateFrom }),
       ...(dateTo && { dateTo }),
     };
-    mockGetQuotes(filters).then(setQuotes).finally(() => setLoading(false));
+    getQuotes(filters).then(setQuotes).finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -77,11 +77,11 @@ export function CotizacionesTab() {
   }, [filterService, filterStatus, dateFrom, dateTo]);
 
   useEffect(() => {
-    mockGetServices().then(s => setServices(s.map(x => ({ id: x.id, name: x.name }))));
+    getServices().then(s => setServices(s.map(x => ({ id: x.id, name: x.name }))));
   }, []);
 
   const openDetail = (id: string) => {
-    mockGetQuoteById(id).then(q => {
+    getQuoteById(id).then(q => {
       if (q) {
         setSelectedQuote(q);
         setEditingStatus(q.status);
@@ -93,7 +93,7 @@ export function CotizacionesTab() {
 
   const handleSaveStatus = () => {
     if (!selectedQuote || editingStatus === null) return;
-    mockUpdateQuoteStatus(selectedQuote.id, editingStatus, editingObservations || null).then(({ success }) => {
+    updateQuoteStatus(selectedQuote.id, editingStatus, editingObservations || null).then(({ success }) => {
       if (success) {
         toast.success('Cotización actualizada');
         setSelectedQuote(prev => prev ? { ...prev, status: editingStatus, observations: editingObservations || null } : null);

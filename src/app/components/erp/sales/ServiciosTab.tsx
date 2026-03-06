@@ -14,13 +14,13 @@ import {
   SelectValue,
 } from '../../ui/select';
 import {
-  mockGetServices,
-  mockGetCategories,
-  mockGetTechnologies,
-  mockGetModuleTemplates,
-  mockGetServiceWithDetails,
-  mockUpdateService,
-} from '../../../../mocks/api';
+  getServices,
+  getCategories,
+  getTechnologies,
+  getModuleTemplates,
+  getServiceWithDetails,
+  updateService,
+} from '../../../../api/salesClient';
 import type { Service, Category, Technology, ModuleTemplate } from '../../../../domain/sales/types';
 import type { ServiceWithDetails } from '../../../../mocks/dataSales';
 import { Pencil, Package, Cpu, X } from 'lucide-react';
@@ -48,10 +48,10 @@ export function ServiciosTab() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      mockGetServices(),
-      mockGetCategories(),
-      mockGetTechnologies(),
-      mockGetModuleTemplates(),
+      getServices(),
+      getCategories(),
+      getTechnologies(),
+      getModuleTemplates(),
     ]).then(([s, c, t, m]) => {
       setServices(s);
       setCategories(c);
@@ -62,7 +62,7 @@ export function ServiciosTab() {
 
   useEffect(() => {
     if (!editingServiceId) return;
-    mockGetServiceWithDetails(editingServiceId).then((d) => {
+    getServiceWithDetails(editingServiceId).then((d) => {
       if (d) {
         setDetail(d);
         setFormName(d.name);
@@ -98,7 +98,7 @@ export function ServiciosTab() {
   const handleSave = () => {
     if (!editingServiceId) return;
     setSaving(true);
-    mockUpdateService(editingServiceId, {
+    updateService(editingServiceId, {
       name: formName,
       short_description: formShortDescription,
       category_id: formCategoryId,
@@ -109,7 +109,7 @@ export function ServiciosTab() {
       setSaving(false);
       if (success) {
         toast.success('Servicio actualizado');
-        mockGetServices().then(setServices);
+        getServices().then(setServices);
         closeEdit();
       } else {
         toast.error('No se pudo actualizar');

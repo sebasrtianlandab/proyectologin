@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../ui/tabs';
-import { FileText, BarChart3, Settings } from 'lucide-react';
+import { FileText, BarChart3, Settings, Users } from 'lucide-react';
 import { CotizacionesTab } from './CotizacionesTab';
+import { ClientesTab } from './ClientesTab';
 import { MonitoreoTab } from './MonitoreoTab';
 import { ServiciosTab } from './ServiciosTab';
 
 const TAB_VALUE_BY_PATH: Record<string, string> = {
   '/ventas/cotizaciones': 'cotizaciones',
+  '/ventas/clientes': 'clientes',
   '/ventas/monitoreo': 'monitoreo',
   '/ventas/servicios': 'servicios',
 };
@@ -31,6 +33,9 @@ export function SalesTabs() {
         <TabsTrigger value="cotizaciones" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
           <FileText className="w-4 h-4" /> Cotizaciones
         </TabsTrigger>
+        <TabsTrigger value="clientes" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+          <Users className="w-4 h-4" /> Clientes
+        </TabsTrigger>
         <TabsTrigger value="monitoreo" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
           <BarChart3 className="w-4 h-4" /> Monitoreo
         </TabsTrigger>
@@ -40,6 +45,9 @@ export function SalesTabs() {
       </TabsList>
       <TabsContent value="cotizaciones">
         <CotizacionesTab />
+      </TabsContent>
+      <TabsContent value="clientes">
+        <ClientesTab />
       </TabsContent>
       <TabsContent value="monitoreo">
         <MonitoreoTab />

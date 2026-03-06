@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { Eye, Users, Activity, ShieldCheck, ArrowUpRight, Clock, Zap } from 'lucide-react';
 import { getQuickAccessItems } from '../../config/nav';
 import { motion } from 'motion/react';
-import { mockGetAnalyticsSummary, mockGetAudit, mockGetUsersCount, mockTrackAnalytics } from '../../../mocks/api';
+import { getAnalyticsSummary, getAudit, getUsersCount, trackAnalytics } from '../../../api/client';
 
 export function MainDashboard() {
     const session = AuthService.getSession();
@@ -22,9 +22,9 @@ export function MainDashboard() {
         const fetchStats = async () => {
             try {
                 const [visitData, auditData, usersData] = await Promise.all([
-                    mockGetAnalyticsSummary(7),
-                    mockGetAudit(),
-                    mockGetUsersCount(),
+                    getAnalyticsSummary(7),
+                    getAudit(),
+                    getUsersCount(),
                 ]);
                 setStats({
                     totalVisits: visitData.totalVisits || 0,
@@ -39,7 +39,7 @@ export function MainDashboard() {
             }
         };
         fetchStats();
-        mockTrackAnalytics();
+        trackAnalytics();
     }, []);
 
     const kpiColor = 'bg-viision-50 text-viision-600';

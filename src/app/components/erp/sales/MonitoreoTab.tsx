@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
-import { mockGetEventsSummary, mockGetQuoteCountsByStatus } from '../../../../mocks/api';
+import { getEventsSummary, getQuoteCountsByStatus } from '../../../../api/salesClient';
 import type { EventsSummary, EventType } from '../../../../domain/sales/types';
 import { KpiCard } from './KpiCard';
 import { MousePointer, FileCheck, Eye, ShoppingCart, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
@@ -44,8 +44,8 @@ export function MonitoreoTab() {
 
   useEffect(() => {
     const days = parseInt(period, 10) || 7;
-    mockGetEventsSummary(days).then(setSummary);
-    mockGetQuoteCountsByStatus().then(setCounts);
+    getEventsSummary(days).then(setSummary);
+    getQuoteCountsByStatus().then(setCounts);
   }, [period]);
 
   if (!summary) {

@@ -2,6 +2,7 @@
 import { createBrowserRouter } from 'react-router';
 import { LoginView } from './components/auth/LoginView';
 import { OTPVerificationView } from './components/auth/OTPVerificationView';
+import { RegisterClientView } from './components/auth/RegisterClientView';
 import { AuditView } from './components/auth/AuditView';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { ForceChangePassword } from './components/auth/ForceChangePassword';
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
   {
     path: '/verify-otp',
     element: <OTPVerificationView />,
+  },
+  {
+    path: '/registro-cliente',
+    element: <RegisterClientView />,
   },
   // Cambio de contraseña obligatorio (accesible SIN sesión para empleados con clave temporal)
   {
@@ -127,6 +132,14 @@ export const router = createBrowserRouter([
   },
   {
     path: '/ventas/servicios',
+    element: (
+      <ProtectedRoute>
+        <SalesView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/ventas/clientes',
     element: (
       <ProtectedRoute>
         <SalesView />

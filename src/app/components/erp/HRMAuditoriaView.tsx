@@ -6,7 +6,7 @@ import { ExportTableButton } from '../ui/ExportTableButton';
 import { StatCard } from '../ui/StatCard';
 import { ErpDataTable } from '../ui/ErpDataTable';
 import { useAsyncData } from '../../hooks/useAsyncData';
-import { mockGetAudit } from '../../../mocks/api';
+import { getAudit } from '../../../api/client';
 
 type AuditRow = { id?: string; timestamp?: string; action?: string; email?: string; ip?: string };
 
@@ -21,7 +21,7 @@ const actionLabels: Record<string, string> = {
 
 export function HRMAuditoriaView() {
     const loadAudits = async () => {
-        const data = await mockGetAudit();
+        const data = await getAudit();
         if (data.success && Array.isArray(data.audits)) {
             return data.audits.filter((a: { action?: string }) => HR_ACTIONS.includes(a.action ?? ''));
         }
